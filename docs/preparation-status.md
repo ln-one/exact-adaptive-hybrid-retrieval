@@ -44,6 +44,10 @@ file checksums live under `models/bge-small-en-v1.5/`.
 |---|---|---|
 | NFCorpus | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
 | NFCorpus | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
+| SciFact | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
+| ArguAna | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
+| SciDocs | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
+| CQADupStack / Android | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
 
 The isolated JDK 21 / Pyserini runtime is pinned in `sparse-requirements.lock`.
 
