@@ -44,3 +44,8 @@ PATH=/opt/homebrew/opt/openjdk@21/bin:$PATH \
 `scripts/build_bm25_impacts.py` materializes the corresponding portable,
 non-negative Sparse vectors. Both builders write atomic, checksum-backed
 artifacts outside this Git repository.
+
+To load a verified Dense/Sparse pair later, create a matching named-vector
+collection, then run `load_qdrant_dense.py` followed by `load_qdrant_sparse.py`.
+The sparse loader uses Qdrant's vector-update endpoint so it does not overwrite
+the Dense vector already stored for the same deterministic point identity.
