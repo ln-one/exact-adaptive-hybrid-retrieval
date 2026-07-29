@@ -27,6 +27,7 @@ from pyserini.analysis import Analyzer, get_lucene_analyzer
 
 
 SCHEMA_VERSION = 1
+GIB = 1024**3
 VECTOR_SCHEMA = pa.schema(
     [
         ("id", pa.string()),
@@ -47,6 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--b", type=float, default=0.4)
     parser.add_argument("--row-batch-size", type=int, default=10_000)
     parser.add_argument("--shard-rows", type=int, default=100_000)
+    parser.add_argument("--minimum-free-after-gib", type=int, default=120)
     return parser.parse_args()
 
 
@@ -56,6 +58,21 @@ def sha256_file(path: Path) -> str:
         while chunk := handle.read(8 * 1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def assert_capacity(root: Path, rows: int, minimum_free_after_gib: int) -> None:
+    """Reserve a conservative 1 KiB per document for sparse shards and vocabulary."""
+    if minimum_free_after_gib < 0:
+        raise ValueError("--minimum-free-after-gib must be non-negative")
+    estimated_bytes = rows * 1024
+    free = shutil.disk_usage(root).free
+    reserve = minimum_free_after_gib * GIB
+    if free - estimated_bytes < reserve:
+        raise RuntimeError(
+            "capacity gate failed: "
+            f"free={free / GIB:.1f} GiB, estimated sparse artifact={estimated_bytes / GIB:.1f} GiB, "
+            f"required reserve={minimum_free_after_gib} GiB"
+        )
 
 
 def tree_manifest(directory: Path) -> list[dict[str, object]]:
@@ -218,6 +235,7 @@ def main() -> None:
     if args.k1 < 0 or not 0 <= args.b <= 1 or args.row_batch_size <= 0 or args.shard_rows <= 0:
         raise ValueError("invalid BM25 parameters or batch sizes")
     documents, queries, source_manifest = verified_source(args.artifact_root, args.dataset)
+    assert_capacity(args.artifact_root, source_manifest["counts"]["documents"], args.minimum_free_after_gib)
     output = args.artifact_root / "datasets" / args.dataset / "sparse" / "bm25-impact-v1"
     if (output / "manifest.json").exists():
         print(f"already built: {output / 'manifest.json'}")

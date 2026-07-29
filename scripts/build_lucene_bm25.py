@@ -18,6 +18,7 @@ from pyserini.index.lucene import LuceneIndexer
 
 
 INDEX_SCHEMA_VERSION = 1
+GIB = 1024**3
 
 
 def sha256_file(path: Path) -> str:
@@ -41,6 +42,21 @@ def tree_manifest(directory: Path) -> list[dict[str, object]]:
     return entries
 
 
+def assert_capacity(root: Path, rows: int, minimum_free_after_gib: int) -> None:
+    """Reserve a conservative 1 KiB per document for a transient Lucene build."""
+    if minimum_free_after_gib < 0:
+        raise ValueError("--minimum-free-after-gib must be non-negative")
+    estimated_bytes = rows * 1024
+    free = shutil.disk_usage(root).free
+    reserve = minimum_free_after_gib * GIB
+    if free - estimated_bytes < reserve:
+        raise RuntimeError(
+            "capacity gate failed: "
+            f"free={free / GIB:.1f} GiB, estimated Lucene artifact={estimated_bytes / GIB:.1f} GiB, "
+            f"required reserve={minimum_free_after_gib} GiB"
+        )
+
+
 def java_runtime() -> dict[str, str]:
     java = shutil.which("java")
     if java is None:
@@ -58,6 +74,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--threads", type=int, default=8)
     parser.add_argument("--row-batch-size", type=int, default=10_000)
+    parser.add_argument("--minimum-free-after-gib", type=int, default=120)
     return parser.parse_args()
 
 
@@ -73,6 +90,7 @@ def main() -> None:
     expected_sha = source_manifest["files"]["documents.parquet"]["sha256"]
     if sha256_file(documents) != expected_sha:
         raise RuntimeError(f"source checksum mismatch: {documents}")
+    assert_capacity(args.artifact_root, source_manifest["counts"]["documents"], args.minimum_free_after_gib)
 
     output = args.artifact_root / "datasets" / args.dataset / "sparse" / "lucene-bm25"
     manifest_path = output / "manifest.json"
