@@ -29,6 +29,14 @@ Lucene baseline. Its manifest must record:
 - vector dtype, non-negativity check and dimension/term-id domain;
 - artifact byte size and shard checksums.
 
+Canonical benchmark v1 instantiates this contract as `bm25-impact-v1`: document
+vectors store static non-negative BM25 term impacts and query vectors contain
+unique analyzed terms with unit weight. Term IDs are the lexicographic order of
+the frozen Anserini-analyzed vocabulary. This makes the representation portable
+to Qdrant while retaining a fully recorded relationship to the independent
+Lucene BM25 reference. It is not described as bit-identical to Lucene's query
+parser or as a substitute for the external lexical baseline.
+
 The benchmark reports both layers. A Dense/Sparse ED-WRRF run uses the frozen
 Stratumind channel representations; the Lucene BM25 run remains an independent
 mature lexical reference. A representation cannot be called canonical merely
