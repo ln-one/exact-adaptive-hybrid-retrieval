@@ -42,3 +42,5 @@ for dataset in trec-covid msmarco-passage-trec-dl-2019; do
 done
 
 touch "$artifact_root/logs/remaining-sparse.success"
+./scripts/audit_canonical_v1.sh "$artifact_root"
+touch "$artifact_root/logs/canonical-v1.success"
