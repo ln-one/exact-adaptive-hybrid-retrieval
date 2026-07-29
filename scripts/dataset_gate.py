@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import tomllib
 from pathlib import Path
 
@@ -36,3 +37,18 @@ def assert_dataset_eligible(dataset: str, config: Path | None = None) -> str:
             "canonical artifact generation is blocked pending original-source review"
         )
     return status
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Fail closed unless a dataset is eligible for canonical artifacts."
+    )
+    parser.add_argument("--dataset", required=True)
+    parser.add_argument("--config", type=Path)
+    args = parser.parse_args()
+    status = assert_dataset_eligible(args.dataset, args.config)
+    print(f"{args.dataset}: {status}")
+
+
+if __name__ == "__main__":
+    main()

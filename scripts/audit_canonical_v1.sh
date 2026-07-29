@@ -18,6 +18,7 @@ cd "$repo_root"
 }
 
 for dataset in nfcorpus scifact trec-covid msmarco-passage-trec-dl-2019 msmarco-passage-trec-dl-2020; do
+  .venv/bin/python scripts/dataset_gate.py --dataset "$dataset"
   .venv/bin/python scripts/verify_source.py --artifact-root "$artifact_root" --dataset "$dataset"
   for kind in documents queries; do
     .venv/bin/python scripts/verify_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind "$kind"
