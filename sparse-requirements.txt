@@ -1,0 +1,2 @@
+# Isolated from the Dense runtime: Pyserini 2.x requires Transformers 5.x.
+pyserini==2.3.0

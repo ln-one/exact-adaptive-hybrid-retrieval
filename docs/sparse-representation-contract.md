@@ -11,9 +11,11 @@ checksum are recorded in the index manifest. This is the reference definition
 for a conventional lexical ranking and is evaluated with the official qrels.
 
 The Pyserini project documents custom JSONL collection indexing and an
-embeddable Lucene BM25 indexer. The current upstream line requires JDK 21; the
-host currently provides JDK 17, so this step is deliberately gated rather than
-silently swapping to an unrecorded tokenizer or a different Java stack.
+embeddable Lucene BM25 indexer. This benchmark pins Pyserini in its own Python
+environment because its current Transformers dependency is intentionally kept
+separate from the frozen Dense runtime. It uses the host's recorded JDK 21
+installation. The index manifest records both environments rather than
+silently swapping tokenizer or Java stacks.
 
 ## 2. Stratumind sparse channel input
 
@@ -39,4 +41,3 @@ because its output is accepted by an index.
 - Every generated vector must be finite; Sparse weights must be non-negative.
 - Index build and query runtime are separate measurements.
 - A missing or mismatched Sparse manifest invalidates a manuscript result.
-
