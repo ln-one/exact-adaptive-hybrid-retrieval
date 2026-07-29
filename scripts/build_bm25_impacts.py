@@ -49,6 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--row-batch-size", type=int, default=10_000)
     parser.add_argument("--shard-rows", type=int, default=100_000)
     parser.add_argument("--minimum-free-after-gib", type=int, default=120)
+    parser.add_argument("--reuse-documents-from", help="dataset with an identical verified canonical document corpus")
     return parser.parse_args()
 
 
@@ -230,12 +231,37 @@ def write_query_vectors(
     return count, outputs
 
 
+def reuse_document_vectors(
+    root: Path, source_dataset: str, target_document_sha: str, temporary: Path, k1: float, b: float
+) -> tuple[dict[str, int], int, list[Path], dict[str, object]]:
+    source = root / "datasets" / source_dataset / "sparse" / "bm25-impact-v1"
+    manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
+    if manifest["source"]["documents_sha256"] != target_document_sha:
+        raise RuntimeError("shared Sparse document corpus checksum differs")
+    representation = manifest["representation"]
+    if representation["kind"] != "bm25_impact_sparse_vector" or representation["k1"] != k1 or representation["b"] != b:
+        raise RuntimeError("shared Sparse representation differs from requested profile")
+    checksums = {entry["path"]: entry["sha256"] for entry in manifest["files"]}
+    names = [manifest["vocabulary"]["path"], *manifest["shards"]["documents"]]
+    for name in names:
+        path = source / name
+        if not path.is_file() or sha256_file(path) != checksums.get(name):
+            raise RuntimeError(f"shared Sparse artifact checksum mismatch: {path}")
+        os.link(path, temporary / name)
+    vocabulary_table = pq.read_table(temporary / manifest["vocabulary"]["path"], columns=["term", "term_id"])
+    terms = vocabulary_table.to_pydict()
+    vocabulary = dict(zip(terms["term"], terms["term_id"], strict=True))
+    document_shards = [temporary / name for name in manifest["shards"]["documents"]]
+    return vocabulary, manifest["source"]["documents"], document_shards, representation
+
+
 def main() -> None:
     args = parse_args()
     if args.k1 < 0 or not 0 <= args.b <= 1 or args.row_batch_size <= 0 or args.shard_rows <= 0:
         raise ValueError("invalid BM25 parameters or batch sizes")
     documents, queries, source_manifest = verified_source(args.artifact_root, args.dataset)
-    assert_capacity(args.artifact_root, source_manifest["counts"]["documents"], args.minimum_free_after_gib)
+    estimated_rows = 0 if args.reuse_documents_from else source_manifest["counts"]["documents"]
+    assert_capacity(args.artifact_root, estimated_rows, args.minimum_free_after_gib)
     output = args.artifact_root / "datasets" / args.dataset / "sparse" / "bm25-impact-v1"
     if (output / "manifest.json").exists():
         print(f"already built: {output / 'manifest.json'}")
@@ -247,17 +273,36 @@ def main() -> None:
     try:
         java = java_runtime()
         analyzer = Analyzer(get_lucene_analyzer(language="en", stemming=True, stemmer="porter", stopwords=True))
-        document_frequency, documents_count, total_length = term_statistics(documents, analyzer, args.row_batch_size)
-        if documents_count != source_manifest["counts"]["documents"]:
-            raise RuntimeError("document count changed during statistics pass")
-        if total_length == 0:
-            raise RuntimeError("canonical corpus has no analyzed terms")
-        average_length = total_length / documents_count
-        vocabulary = write_vocabulary(temporary / "vocabulary.parquet", document_frequency)
-        actual_documents, document_shards = write_document_vectors(
-            documents, temporary, analyzer, vocabulary, document_frequency, documents_count,
-            average_length, args.k1, args.b, args.row_batch_size, args.shard_rows,
-        )
+        if args.reuse_documents_from:
+            vocabulary, actual_documents, document_shards, representation = reuse_document_vectors(
+                args.artifact_root, args.reuse_documents_from,
+                source_manifest["files"]["documents.parquet"]["sha256"], temporary, args.k1, args.b,
+            )
+        else:
+            document_frequency, documents_count, total_length = term_statistics(documents, analyzer, args.row_batch_size)
+            if documents_count != source_manifest["counts"]["documents"]:
+                raise RuntimeError("document count changed during statistics pass")
+            if total_length == 0:
+                raise RuntimeError("canonical corpus has no analyzed terms")
+            average_length = total_length / documents_count
+            vocabulary = write_vocabulary(temporary / "vocabulary.parquet", document_frequency)
+            actual_documents, document_shards = write_document_vectors(
+                documents, temporary, analyzer, vocabulary, document_frequency, documents_count,
+                average_length, args.k1, args.b, args.row_batch_size, args.shard_rows,
+            )
+            representation = {
+                "kind": "bm25_impact_sparse_vector",
+                "analyzer": "Pyserini DefaultEnglishAnalyzer; Porter stemming; stopwords removed",
+                "term_id_assignment": "lexicographic UTF-8 term order",
+                "document_weight": "idf * tf*(k1+1)/(tf+k1*(1-b+b*dl/avgdl))",
+                "query_weight": "binary unique analyzed terms",
+                "k1": args.k1,
+                "b": args.b,
+                "average_document_length": average_length,
+                "nonnegative": True,
+                "index_dtype": "int32",
+                "value_dtype": "float32",
+            }
         actual_queries, query_shards = write_query_vectors(
             queries, temporary, analyzer, vocabulary, args.row_batch_size, args.shard_rows
         )
@@ -274,19 +319,7 @@ def main() -> None:
                 "documents": actual_documents,
                 "queries": actual_queries,
             },
-            "representation": {
-                "kind": "bm25_impact_sparse_vector",
-                "analyzer": "Pyserini DefaultEnglishAnalyzer; Porter stemming; stopwords removed",
-                "term_id_assignment": "lexicographic UTF-8 term order",
-                "document_weight": "idf * tf*(k1+1)/(tf+k1*(1-b+b*dl/avgdl))",
-                "query_weight": "binary unique analyzed terms",
-                "k1": args.k1,
-                "b": args.b,
-                "average_document_length": average_length,
-                "nonnegative": True,
-                "index_dtype": "int32",
-                "value_dtype": "float32",
-            },
+            "representation": representation,
             "vocabulary": {"terms": len(vocabulary), "path": "vocabulary.parquet"},
             "builder": {
                 "pyserini": importlib.metadata.version("pyserini"),
@@ -301,6 +334,8 @@ def main() -> None:
             },
             "files": files,
         }
+        if args.reuse_documents_from:
+            manifest["documents_reused_from"] = args.reuse_documents_from
         (temporary / "manifest.json").write_text(
             json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
