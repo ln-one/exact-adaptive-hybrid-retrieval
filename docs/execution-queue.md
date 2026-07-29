@@ -8,9 +8,10 @@ MPS device, memory bandwidth, or artifact disk.
 1. Finish and verify `msmarco-passage-trec-dl-2019` document Dense vectors.
    The 2020 task reuses those document vectors and needs only its own queries.
 2. Encode remaining missing canonical Dense artifacts, one MPS job at a time:
-   Touche-2020, SciDocs, ArguAna, SciFact.
-3. Materialize `bm25-impact-v1` for remaining corpora. Run these CPU/Java jobs
-   only after the MPS job is idle; process MS MARCO last. The TREC-DL 2020
+   SciFact. Touche-2020, SciDocs and ArguAna remain outside this queue until
+   their original-source license rows are audited.
+3. Materialize `bm25-impact-v1` for remaining eligible corpora. Run these
+   CPU/Java jobs only after the MPS job is idle; process MS MARCO last. The TREC-DL 2020
    task hard-links the verified 2019 document impacts and materializes only its
    distinct query vectors.
 4. Build Lucene BM25 reference indexes, also CPU/Java only; small datasets
