@@ -32,7 +32,7 @@ def verify_vectors(paths: list[Path], source: Path, expected: int) -> int:
         parquet = pq.ParquetFile(path)
         if parquet.schema_arrow.names != ["id", "indices", "values"]:
             raise RuntimeError(f"unexpected Sparse schema: {path}")
-        for batch in parquet.iter_batches(columns=["id", "indices", "values"]):
+        for batch in parquet.iter_batches(batch_size=5_000, columns=["id", "indices", "values"]):
             for external_id, indices, values in zip(
                 batch.column("id").to_pylist(), batch.column("indices").to_pylist(), batch.column("values").to_pylist(), strict=True
             ):
