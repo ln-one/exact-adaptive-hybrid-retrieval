@@ -20,6 +20,11 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def source_ids(path: Path):
+    for batch in pq.ParquetFile(path).iter_batches(columns=["id"]):
+        yield from batch.column(0).to_pylist()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifact-root", type=Path, required=True)
@@ -33,10 +38,7 @@ def main() -> None:
     if manifest["source_sha256"] != sha256_file(source):
         raise RuntimeError("source checksum differs from embedding manifest")
 
-    expected_ids = []
-    for batch in pq.ParquetFile(source).iter_batches(columns=["id"]):
-        expected_ids.extend(batch.column(0).to_pylist())
-    seen_ids: list[str] = []
+    expected_ids = source_ids(source)
     total = 0
     max_norm_error = 0.0
     for spec in manifest["shards"]:
@@ -52,9 +54,19 @@ def main() -> None:
         if not np.isfinite(matrix).all():
             raise RuntimeError(f"non-finite vector: {shard.name}")
         max_norm_error = max(max_norm_error, float(np.max(np.abs(np.linalg.norm(matrix, axis=1) - 1.0))))
-        seen_ids.extend(table.column("id").to_pylist())
+        for external_id in table.column("id").to_pylist():
+            try:
+                expected_id = next(expected_ids)
+            except StopIteration as error:
+                raise RuntimeError("too many Dense vectors") from error
+            if external_id != expected_id:
+                raise RuntimeError("embedding identities/order differ from canonical source")
         total += table.num_rows
-    if seen_ids != expected_ids:
+    try:
+        next(expected_ids)
+    except StopIteration:
+        pass
+    else:
         raise RuntimeError("embedding identities/order differ from canonical source")
     if total != manifest["vectors"]:
         raise RuntimeError("embedding count differs from manifest")
