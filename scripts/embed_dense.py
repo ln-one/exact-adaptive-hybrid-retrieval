@@ -22,6 +22,7 @@ MODEL_REVISION = "01d3c3cd65ac9dc6bd0d702ed913366e7931097b"
 DIMENSION = 384
 MAX_LENGTH = 512
 SCHEMA_VERSION = 1
+GIB = 1024**3
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--shard-rows", type=int, default=100_000)
     parser.add_argument("--device", default="cpu", choices=("cpu", "mps"))
+    parser.add_argument("--minimum-free-after-gib", type=int, default=120)
     return parser.parse_args()
 
 
@@ -54,6 +56,21 @@ def write_shard(path: Path, ids: list[str], matrix: np.ndarray) -> None:
     temporary.replace(path)
 
 
+def assert_capacity(root: Path, rows: int, minimum_free_after_gib: int) -> None:
+    """Reserve space for an uncompressed f32 row plus conservative Parquet/id overhead."""
+    if minimum_free_after_gib < 0:
+        raise ValueError("--minimum-free-after-gib must be non-negative")
+    estimated_bytes = rows * (DIMENSION * np.dtype(np.float32).itemsize + 256)
+    free = shutil.disk_usage(root).free
+    reserve = minimum_free_after_gib * GIB
+    if free - estimated_bytes < reserve:
+        raise RuntimeError(
+            "capacity gate failed: "
+            f"free={free / GIB:.1f} GiB, estimated remaining artifact={estimated_bytes / GIB:.1f} GiB, "
+            f"required reserve={minimum_free_after_gib} GiB"
+        )
+
+
 def main() -> None:
     args = parse_args()
     if args.batch_size <= 0 or args.shard_rows <= 0:
@@ -61,6 +78,8 @@ def main() -> None:
     source = args.artifact_root / "datasets" / args.dataset / "source" / f"{args.kind}.parquet"
     if not source.exists():
         raise FileNotFoundError(f"missing canonical source: {source}")
+    source_file = pq.ParquetFile(source)
+    assert_capacity(args.artifact_root, source_file.metadata.num_rows, args.minimum_free_after_gib)
     output = args.artifact_root / "datasets" / args.dataset / "dense" / "bge-small-en-v1.5-f32"
     output.mkdir(parents=True, exist_ok=True)
     profile = output / "profile.json"
@@ -96,7 +115,6 @@ def main() -> None:
         trust_remote_code=False,
     )
     model.max_seq_length = MAX_LENGTH
-    source_file = pq.ParquetFile(source)
     shard_index = 0
     ids: list[str] = []
     texts: list[str] = []
