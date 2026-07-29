@@ -30,3 +30,17 @@ python3 scripts/fetch_beir.py --dataset cqadupstack
 MS MARCO is prepared through its fixed `ir_datasets` identifiers after the
 core archive and representation gates pass.
 
+The lexical reference and portable Sparse impacts use an isolated Pyserini
+runtime so its Transformer dependency cannot alter the frozen Dense encoder:
+
+```bash
+JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
+PATH=/opt/homebrew/opt/openjdk@21/bin:$PATH \
+.venv-sparse/bin/python scripts/build_lucene_bm25.py \
+  --artifact-root /Users/ln1/Projects/stratumind-artifacts/canonical-v1 \
+  --dataset nfcorpus
+```
+
+`scripts/build_bm25_impacts.py` materializes the corresponding portable,
+non-negative Sparse vectors. Both builders write atomic, checksum-backed
+artifacts outside this Git repository.

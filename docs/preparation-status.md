@@ -15,8 +15,8 @@ complete.
 | TREC-COVID | 171,332 | 50 | 66,336 | manifest checksum verified |
 | Touche-2020 | 382,545 | 49 | 2,962 | manifest checksum verified |
 | Quora | 522,931 | 10,000 | 15,675 | manifest checksum verified |
-| MS MARCO Passage / TREC-DL 2019 | 8,841,823 | 43 | 9,260 | source manifest written |
-| MS MARCO Passage / TREC-DL 2020 | shared with 2019 | 54 | 11,386 | source manifest written |
+| MS MARCO Passage / TREC-DL 2019 | 8,841,823 | 43 | 9,260 | manifest checksum verified |
+| MS MARCO Passage / TREC-DL 2020 | shared with 2019 | 54 | 11,386 | manifest checksum verified |
 | CQADupStack / Android | 22,998 | 699 | 1,696 | manifest checksum verified |
 
 All exports preserve official document/query identities and qrels. Documents
@@ -38,8 +38,16 @@ The frozen model revision is
 `01d3c3cd65ac9dc6bd0d702ed913366e7931097b`; its local immutable snapshot and
 file checksums live under `models/bge-small-en-v1.5/`.
 
+## Complete Sparse artifacts
+
+| Dataset | Artifact | Verification |
+|---|---|---|
+| NFCorpus | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
+| NFCorpus | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
+
+The isolated JDK 21 / Pyserini runtime is pinned in `sparse-requirements.lock`.
+
 ## Active work
 
-- TREC-COVID document embeddings;
 - MS MARCO Passage official corpus + TREC-DL 2019 judged qrels;
-- CQADupStack official archive.
+- Dense/Sparse representation generation for remaining canonical corpora.
