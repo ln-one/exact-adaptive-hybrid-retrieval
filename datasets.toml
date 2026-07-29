@@ -1,0 +1,119 @@
+schema_version = 1
+
+[storage]
+default_root = "/Users/ln1/Projects/stratumind-artifacts/canonical-v1"
+hard_budget_gib = 180
+minimum_free_after_gib = 120
+
+[datasets.nfcorpus]
+tier = "core"
+loader_id = "beir/nfcorpus/test"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/nfcorpus.zip"
+archive_md5 = "a89dba18a62ef92f7d323ec890a0d38d"
+archive_bytes = 2448432
+documents = 3633
+queries = 323
+split = "test"
+license_status = "research-audited"
+
+[datasets.scifact]
+tier = "core"
+loader_id = "beir/scifact/test"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scifact.zip"
+archive_md5 = "5f7d1de60b170fc8027bb7898e2efca1"
+archive_bytes = 2816079
+documents = 5183
+queries = 300
+split = "test"
+license_status = "research-only"
+
+[datasets.arguana]
+tier = "core"
+loader_id = "beir/arguana"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/arguana.zip"
+archive_md5 = "8ad3e3c2a5867cdced806d6503f29b99"
+archive_bytes = 3773617
+documents = 8674
+queries = 1406
+split = "test"
+license_status = "pending-source-audit"
+
+[datasets.scidocs]
+tier = "core"
+loader_id = "beir/scidocs"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/scidocs.zip"
+archive_md5 = "38121350fc3a4d2f48850f6aff52e4a9"
+archive_bytes = 142471588
+documents = 25657
+queries = 1000
+split = "test"
+license_status = "pending-source-audit"
+
+[datasets.trec_covid]
+tier = "core"
+loader_id = "beir/trec-covid"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/trec-covid.zip"
+archive_md5 = "ce62140cb23feb9becf6270d0d1fe6d1"
+archive_bytes = 73876720
+documents = 171332
+queries = 50
+split = "test"
+license_status = "research-only-mixed-cord19-rights"
+
+[datasets.touche_2020]
+tier = "core"
+loader_id = "beir/webis-touche2020"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/webis-touche2020.zip"
+archive_md5 = "46f650ba5a527fc69e0a6521c5a23563"
+archive_bytes = 227132363
+documents = 382545
+queries = 49
+split = "test"
+license_status = "pending-source-audit"
+
+[datasets.quora]
+tier = "secondary"
+loader_id = "beir/quora/test"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/quora.zip"
+archive_md5 = "18fb154900ba42a600f84b839c173167"
+archive_bytes = 15853968
+documents = 522931
+queries = 10000
+split = "test"
+license_status = "pending-source-audit"
+
+[datasets.cqadupstack]
+tier = "large-archive"
+loader_id = "beir/cqadupstack"
+archive_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/cqadupstack.zip"
+archive_md5 = "4e41456d7df8ee7760a7f866133bda78"
+archive_bytes = 5343728040
+documents = 457199
+queries = 13145
+split = "test"
+license_status = "pending-source-audit"
+expected_subsets = [
+  "android",
+  "english",
+  "gaming",
+  "gis",
+  "mathematica",
+  "physics",
+  "programmers",
+  "stats",
+  "tex",
+  "unix",
+  "webmasters",
+  "wordpress",
+]
+
+[datasets.msmarco_passage_trec_dl]
+tier = "scale"
+loader_id_2019 = "msmarco-passage/trec-dl-2019/judged"
+loader_id_2020 = "msmarco-passage/trec-dl-2020/judged"
+documents = 8841823
+queries_2019 = 43
+queries_2020 = 54
+split = "official-judged"
+license_status = "research-only-source-terms-required"
+

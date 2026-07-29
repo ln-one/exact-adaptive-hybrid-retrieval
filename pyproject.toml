@@ -1,0 +1,18 @@
+[project]
+name = "stratumind-bench"
+version = "0.1.0"
+description = "Reproducible dataset and experiment pipeline for ED-WRRF."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "dvc==3.63.0",
+  "huggingface-hub==0.34.4",
+  "ir-datasets==0.5.11",
+  "ir-measures==0.4.2",
+  "numpy==2.3.2",
+  "pyarrow==21.0.0",
+  "sentence-transformers==5.1.0",
+  "zstandard==0.23.0",
+]
+
+[tool.uv]
+package = false
