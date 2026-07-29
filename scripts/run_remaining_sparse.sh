@@ -3,19 +3,21 @@
 set -euo pipefail
 
 if [[ $# -ne 2 ]]; then
-  print -u2 "usage: $0 <artifact-root> <wait-for-pid>"
+  print -u2 "usage: $0 <artifact-root> <wait-for-pid|ready>"
   exit 2
 fi
 
 artifact_root=$1
-wait_pid=$2
+wait_for=$2
 script_dir=${0:A:h}
 repo_root=${script_dir:h}
 cd "$repo_root"
 
-while kill -0 "$wait_pid" 2>/dev/null; do
-  sleep 60
-done
+if [[ "$wait_for" != ready ]]; then
+  while kill -0 "$wait_for" 2>/dev/null; do
+    sleep 60
+  done
+fi
 
 [[ -f "$artifact_root/logs/remaining-dense.success" ]] || {
   print -u2 "Dense queue did not complete successfully; refusing Sparse generation"

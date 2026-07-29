@@ -30,3 +30,4 @@ for dataset in scifact; do
 done
 
 touch "$artifact_root/logs/remaining-dense.success"
+exec ./scripts/run_remaining_sparse.sh "$artifact_root" ready
