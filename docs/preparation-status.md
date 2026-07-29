@@ -29,9 +29,9 @@ removed or filled using metadata.
 |---|---:|---:|---|---|
 | NFCorpus | 3,633 | 323 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
 | Quora | 522,931 | 10,000 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
-| CQADupStack / Android | pending documents | 699 | BAAI/bge-small-en-v1.5 f32 | query artifact verified |
-| TREC-COVID | pending documents | 50 | BAAI/bge-small-en-v1.5 f32 | query artifact verified |
-| MS MARCO Passage / TREC-DL 2019 | pending documents | 43 | BAAI/bge-small-en-v1.5 f32 | query artifact verified |
+| CQADupStack / Android | 22,998 | 699 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
+| TREC-COVID | 171,332 | 50 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
+| MS MARCO Passage / TREC-DL 2019 | pending documents | 43 | BAAI/bge-small-en-v1.5 f32 | query artifact verified; MPS document run active |
 | MS MARCO Passage / TREC-DL 2020 | shared documents | 54 | BAAI/bge-small-en-v1.5 f32 | query artifact verified |
 
 The frozen model revision is

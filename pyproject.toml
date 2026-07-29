@@ -6,6 +6,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
   "dvc==3.63.0",
   "huggingface-hub==0.34.4",
+  "httpx==0.28.1",
   "ir-datasets==0.5.11",
   "ir-measures==0.4.2",
   "numpy==2.3.2",
