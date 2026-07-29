@@ -20,7 +20,13 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def verify_vectors(paths: list[Path], expected: int) -> int:
+def source_ids(path: Path):
+    for batch in pq.ParquetFile(path).iter_batches(columns=["id"]):
+        yield from batch.column("id").to_pylist()
+
+
+def verify_vectors(paths: list[Path], source: Path, expected: int) -> int:
+    expected_ids = source_ids(source)
     count = 0
     for path in paths:
         parquet = pq.ParquetFile(path)
@@ -32,6 +38,12 @@ def verify_vectors(paths: list[Path], expected: int) -> int:
             ):
                 if not external_id or len(indices) != len(values):
                     raise RuntimeError(f"invalid Sparse row in {path}")
+                try:
+                    expected_id = next(expected_ids)
+                except StopIteration as error:
+                    raise RuntimeError(f"too many Sparse rows in {path}") from error
+                if external_id != expected_id:
+                    raise RuntimeError(f"Sparse identity/order differs from canonical source in {path}")
                 if indices != sorted(set(indices)) or any(index < 0 for index in indices):
                     raise RuntimeError(f"non-canonical Sparse indices in {path}")
                 if any(not math.isfinite(value) or value < 0 for value in values):
@@ -39,7 +51,11 @@ def verify_vectors(paths: list[Path], expected: int) -> int:
                 count += 1
     if count != expected:
         raise RuntimeError(f"Sparse row count {count}, expected {expected}")
-    return count
+    try:
+        next(expected_ids)
+    except StopIteration:
+        return count
+    raise RuntimeError("Sparse rows ended before canonical source")
 
 
 def main() -> None:
@@ -57,8 +73,12 @@ def main() -> None:
         path = root / entry["path"]
         if not path.is_file() or path.stat().st_size != entry["bytes"] or sha256_file(path) != entry["sha256"]:
             raise RuntimeError(f"Sparse artifact checksum mismatch: {path}")
-    documents = verify_vectors([root / name for name in manifest["shards"]["documents"]], manifest["source"]["documents"])
-    queries = verify_vectors([root / name for name in manifest["shards"]["queries"]], manifest["source"]["queries"])
+    documents = verify_vectors(
+        [root / name for name in manifest["shards"]["documents"]], source / "documents.parquet", manifest["source"]["documents"]
+    )
+    queries = verify_vectors(
+        [root / name for name in manifest["shards"]["queries"]], source / "queries.parquet", manifest["source"]["queries"]
+    )
     vocabulary = pq.ParquetFile(root / manifest["vocabulary"]["path"]).metadata.num_rows
     if vocabulary != manifest["vocabulary"]["terms"]:
         raise RuntimeError("vocabulary size mismatch")
