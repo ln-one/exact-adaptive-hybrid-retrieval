@@ -16,6 +16,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from sentence_transformers import SentenceTransformer
 
+from dataset_gate import assert_dataset_eligible
+
 
 MODEL_ID = "BAAI/bge-small-en-v1.5"
 MODEL_REVISION = "01d3c3cd65ac9dc6bd0d702ed913366e7931097b"
@@ -75,6 +77,7 @@ def main() -> None:
     args = parse_args()
     if args.batch_size <= 0 or args.shard_rows <= 0:
         raise ValueError("batch and shard sizes must be positive")
+    assert_dataset_eligible(args.dataset)
     source = args.artifact_root / "datasets" / args.dataset / "source" / f"{args.kind}.parquet"
     if not source.exists():
         raise FileNotFoundError(f"missing canonical source: {source}")

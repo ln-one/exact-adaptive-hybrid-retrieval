@@ -16,6 +16,8 @@ from pathlib import Path
 import pyarrow.parquet as pq
 from pyserini.index.lucene import LuceneIndexer
 
+from dataset_gate import assert_dataset_eligible
+
 
 INDEX_SCHEMA_VERSION = 1
 GIB = 1024**3
@@ -82,6 +84,7 @@ def main() -> None:
     args = parse_args()
     if args.threads <= 0 or args.row_batch_size <= 0:
         raise ValueError("--threads and --row-batch-size must be positive")
+    assert_dataset_eligible(args.dataset)
 
     source = args.artifact_root / "datasets" / args.dataset / "source"
     source_manifest_path = source / "manifest.json"

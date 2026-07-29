@@ -28,6 +28,8 @@ worktree.
   outside Git under the configured artifact root.
 - A result is manuscript-eligible only when its dataset, representation,
   executable, parameters, hardware, and output checksums are recorded.
+- A generated artifact is canonical only when the source dataset has passed the
+  original-source license gate. BEIR availability is not itself a license gate.
 
 ## Capacity gates
 
@@ -35,4 +37,3 @@ The artifact root has a 180 GiB working-set budget and must leave at least
 120 GiB free. CQADupStack and MS MARCO are separate gates. Full per-query
 rankings are not archived by default; the pipeline stores ordered Top-K
 oracles, trace summaries, and reproducible inputs instead.
-

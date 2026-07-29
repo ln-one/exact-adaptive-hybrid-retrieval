@@ -13,6 +13,7 @@ import httpx
 import pyarrow.parquet as pq
 
 from load_qdrant_dense import point_id
+from dataset_gate import assert_dataset_eligible
 
 
 def sha256_file(path: Path) -> str:
@@ -60,6 +61,7 @@ def main() -> None:
     args = parse_args()
     if args.batch_size <= 0:
         raise ValueError("--batch-size must be positive")
+    assert_dataset_eligible(args.dataset)
     base = args.artifact_root / "datasets" / args.dataset / "sparse" / "bm25-impact-v1"
     manifest = verified_manifest(base)
     client = httpx.Client(base_url=args.url.rstrip("/"), timeout=120.0)

@@ -25,6 +25,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from pyserini.analysis import Analyzer, get_lucene_analyzer
 
+from dataset_gate import assert_dataset_eligible
+
 
 SCHEMA_VERSION = 1
 GIB = 1024**3
@@ -259,6 +261,7 @@ def main() -> None:
     args = parse_args()
     if args.k1 < 0 or not 0 <= args.b <= 1 or args.row_batch_size <= 0 or args.shard_rows <= 0:
         raise ValueError("invalid BM25 parameters or batch sizes")
+    assert_dataset_eligible(args.dataset)
     documents, queries, source_manifest = verified_source(args.artifact_root, args.dataset)
     estimated_rows = 0 if args.reuse_documents_from else source_manifest["counts"]["documents"]
     assert_capacity(args.artifact_root, estimated_rows, args.minimum_free_after_gib)

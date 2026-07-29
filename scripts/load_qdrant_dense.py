@@ -12,6 +12,8 @@ import httpx
 import numpy as np
 import pyarrow.parquet as pq
 
+from dataset_gate import assert_dataset_eligible
+
 
 POINT_NAMESPACE = uuid.UUID("a0541185-c167-51be-9665-4c5e739d75d3")
 
@@ -46,6 +48,7 @@ def main() -> None:
     args = parse_args()
     if args.batch_size <= 0:
         raise ValueError("--batch-size must be positive")
+    assert_dataset_eligible(args.dataset)
     base = args.artifact_root / "datasets" / args.dataset / "dense" / "bge-small-en-v1.5-f32"
     manifest = verify_manifest(base)
     client = httpx.Client(base_url=args.url.rstrip("/"), timeout=120.0)

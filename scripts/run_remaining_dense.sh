@@ -22,7 +22,7 @@ uv run python scripts/verify_dense.py --artifact-root "$artifact_root" --dataset
 uv run python scripts/reuse_dense_documents.py --artifact-root "$artifact_root" --from-dataset msmarco-passage-trec-dl-2019 --to-dataset msmarco-passage-trec-dl-2020
 uv run python scripts/verify_dense.py --artifact-root "$artifact_root" --dataset msmarco-passage-trec-dl-2020 --kind documents
 
-for dataset in touche-2020 scidocs arguana scifact; do
+for dataset in scifact; do
   uv run python scripts/embed_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind documents --batch-size 128 --shard-rows 25000 --device mps
   uv run python scripts/verify_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind documents
   uv run python scripts/embed_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind queries --batch-size 128 --shard-rows 25000 --device mps

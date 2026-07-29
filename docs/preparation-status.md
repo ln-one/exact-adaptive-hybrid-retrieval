@@ -28,8 +28,6 @@ removed or filled using metadata.
 | Dataset | Documents | Queries | Encoder | Verification |
 |---|---:|---:|---|---|
 | NFCorpus | 3,633 | 323 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
-| Quora | 522,931 | 10,000 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
-| CQADupStack / Android | 22,998 | 699 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
 | TREC-COVID | 171,332 | 50 | BAAI/bge-small-en-v1.5 f32 | IDs/checksums/vectors/norms verified |
 | MS MARCO Passage / TREC-DL 2019 | pending documents | 43 | BAAI/bge-small-en-v1.5 f32 | query artifact verified; MPS document run active |
 | MS MARCO Passage / TREC-DL 2020 | shared documents | 54 | BAAI/bge-small-en-v1.5 f32 | query artifact verified |
@@ -46,14 +44,15 @@ file checksums live under `models/bge-small-en-v1.5/`.
 | NFCorpus | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
 | SciFact | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
 | SciFact | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
-| ArguAna | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
-| ArguAna | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
-| SciDocs | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
-| SciDocs | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
-| CQADupStack / Android | Pyserini/Anserini Lucene BM25 reference index | index and source checksums verified |
-| CQADupStack / Android | `bm25-impact-v1` portable non-negative vectors | source, shard, vocabulary and vector checks verified |
 
 The isolated JDK 21 / Pyserini runtime is pinned in `sparse-requirements.lock`.
+
+## Pre-gate local artifacts (not canonical)
+
+Touche-2020, Quora, ArguAna, SciDocs and CQADupStack/Android have locally verified source or
+representation artifacts from early preparation, but their original-source
+license rows remain pending. They are excluded from canonical runs and public
+claims until the data-use register is completed.
 
 ## Active work
 

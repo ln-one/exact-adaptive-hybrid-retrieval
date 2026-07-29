@@ -26,7 +26,7 @@ java_home=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 export JAVA_HOME="$java_home"
 export PATH=/opt/homebrew/opt/openjdk@21/bin:$PATH
 
-for dataset in trec-covid touche-2020 quora msmarco-passage-trec-dl-2019; do
+for dataset in trec-covid msmarco-passage-trec-dl-2019; do
   .venv-sparse/bin/python scripts/build_bm25_impacts.py --artifact-root "$artifact_root" --dataset "$dataset" --row-batch-size 10000 --shard-rows 100000
   .venv-sparse/bin/python scripts/verify_bm25_impacts.py --artifact-root "$artifact_root" --dataset "$dataset"
 done
@@ -34,7 +34,7 @@ done
 .venv-sparse/bin/python scripts/build_bm25_impacts.py --artifact-root "$artifact_root" --dataset msmarco-passage-trec-dl-2020 --reuse-documents-from msmarco-passage-trec-dl-2019 --row-batch-size 10000 --shard-rows 100000
 .venv-sparse/bin/python scripts/verify_bm25_impacts.py --artifact-root "$artifact_root" --dataset msmarco-passage-trec-dl-2020
 
-for dataset in trec-covid touche-2020 quora msmarco-passage-trec-dl-2019; do
+for dataset in trec-covid msmarco-passage-trec-dl-2019; do
   .venv-sparse/bin/python scripts/build_lucene_bm25.py --artifact-root "$artifact_root" --dataset "$dataset" --threads 8 --row-batch-size 10000
   .venv-sparse/bin/python scripts/verify_lucene_bm25.py --artifact-root "$artifact_root" --dataset "$dataset"
 done
