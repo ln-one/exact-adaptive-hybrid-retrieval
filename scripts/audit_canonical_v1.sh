@@ -12,6 +12,11 @@ script_dir=${0:A:h}
 repo_root=${script_dir:h}
 cd "$repo_root"
 
+[[ -f "$artifact_root/models/bge-small-en-v1.5/01d3c3cd65ac9dc6bd0d702ed913366e7931097b/model-manifest.json" ]] || {
+  print -u2 "frozen BGE model manifest is missing"
+  exit 1
+}
+
 for dataset in nfcorpus scifact trec-covid msmarco-passage-trec-dl-2019 msmarco-passage-trec-dl-2020; do
   .venv/bin/python scripts/verify_source.py --artifact-root "$artifact_root" --dataset "$dataset"
   for kind in documents queries; do
