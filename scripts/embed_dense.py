@@ -73,10 +73,15 @@ def main() -> None:
         "dtype": "float32",
         "normalization": "l2",
         "backend": "sentence-transformers",
-        "device": args.device,
     }
     if profile.exists():
-        if json.loads(profile.read_text()) != profile_payload:
+        existing_profile = json.loads(profile.read_text())
+        # `device` describes how one artifact was produced, not the identity
+        # of the frozen encoder. Older scaffolding stored it in the shared
+        # profile; migrate that metadata without losing per-kind provenance.
+        if existing_profile == {**profile_payload, "device": existing_profile.get("device")}:
+            profile.write_text(json.dumps(profile_payload, indent=2, sort_keys=True) + "\n")
+        elif existing_profile != profile_payload:
             raise RuntimeError("existing Dense profile differs; refusing to mix artifacts")
     else:
         profile.write_text(json.dumps(profile_payload, indent=2, sort_keys=True) + "\n")
@@ -133,6 +138,7 @@ def main() -> None:
     manifest = {
         **profile_payload,
         "kind": args.kind,
+        "execution": {"device": args.device, "batch_size": args.batch_size},
         "source_sha256": sha256_file(source),
         "vectors": total,
         "shards": [
