@@ -28,3 +28,5 @@ for dataset in touche-2020 scidocs arguana scifact; do
   uv run python scripts/embed_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind queries --batch-size 128 --shard-rows 25000 --device mps
   uv run python scripts/verify_dense.py --artifact-root "$artifact_root" --dataset "$dataset" --kind queries
 done
+
+touch "$artifact_root/logs/remaining-dense.success"
