@@ -60,6 +60,8 @@ def _validate(config: E2Config) -> None:
         raise ValueError("warmups must be non-negative and repetitions must be positive")
     if config.query_limit is not None and config.query_limit <= 0:
         raise ValueError("query limit must be positive")
+    if config.query_limit is not None and not config.allow_dirty:
+        raise RuntimeError("query-limited E2 is a development dry run and requires --allow-dirty")
     if not config.system_artifact.strip():
         raise ValueError("system artifact digest must be non-empty")
 
