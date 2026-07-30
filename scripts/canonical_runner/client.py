@@ -11,6 +11,13 @@ import httpx
 from .artifacts import QueryInput
 from .fusion import PointId, identity_key
 
+E5_PRODUCER_PLANS = {
+    "pvs-pbm": "canonical-e5-pvs-pbm",
+    "scalar-pbm": "canonical-e5-scalar-pbm",
+    "scan-pbm": "canonical-e5-scan-pbm",
+    "pvs-sparse-materialized": "canonical-e5-pvs-sparse-materialized",
+}
+
 
 @dataclass(frozen=True)
 class ExactRrfResult:
@@ -220,6 +227,75 @@ class QueryClient:
         ) != [True, True]:
             raise RuntimeError("same-producer exhaustive baseline did not drain both channels")
         return result
+
+    def producer_rrf(
+        self,
+        query: QueryInput,
+        *,
+        producer: str,
+        dense_name: str,
+        sparse_name: str,
+        k: int,
+        weights: tuple[float, float],
+        limit: int,
+    ) -> ExactRrfResult:
+        try:
+            expected_plan = E5_PRODUCER_PLANS[producer]
+        except KeyError as error:
+            raise ValueError(f"unsupported E5 producer: {producer}") from error
+        result = self._exact_rrf(
+            query,
+            endpoint=(
+                f"/internal/collections/{self.collection}/points/query/"
+                f"exact-rrf-producer?producer={producer}"
+            ),
+            expected_plan=expected_plan,
+            dense_name=dense_name,
+            sparse_name=sparse_name,
+            k=k,
+            weights=weights,
+            limit=limit,
+        )
+        self._validate_e5_producer(result.execution, producer)
+        return result
+
+    @staticmethod
+    def _validate_e5_producer(execution: dict[str, Any], producer: str) -> None:
+        telemetry = execution.get("producer")
+        if not isinstance(telemetry, dict):
+            raise RuntimeError("E5 execution is missing producer telemetry")
+        dense_counts = {
+            "pvs": telemetry.get("densePvsSegments"),
+            "scalar": telemetry.get("denseScalarSegments"),
+            "scan": telemetry.get("denseScanSegments"),
+        }
+        sparse_counts = {
+            "pbm": telemetry.get("sparsePbmSegments"),
+            "materialized": telemetry.get("sparseMaterializedSegments"),
+        }
+        if any(not isinstance(value, int) or value < 0 for value in dense_counts.values()):
+            raise RuntimeError(f"E5 Dense producer counters are invalid: {dense_counts!r}")
+        if any(not isinstance(value, int) or value < 0 for value in sparse_counts.values()):
+            raise RuntimeError(f"E5 Sparse producer counters are invalid: {sparse_counts!r}")
+        expected_dense = (
+            "scalar" if producer == "scalar-pbm" else "scan" if producer == "scan-pbm" else "pvs"
+        )
+        expected_sparse = "materialized" if producer == "pvs-sparse-materialized" else "pbm"
+        if dense_counts[expected_dense] <= 0 or any(
+            value != 0 for name, value in dense_counts.items() if name != expected_dense
+        ):
+            raise RuntimeError(
+                f"E5 forced Dense producer was not honored for {producer}: {dense_counts!r}"
+            )
+        if sparse_counts[expected_sparse] <= 0 or any(
+            value != 0 for name, value in sparse_counts.items() if name != expected_sparse
+        ):
+            raise RuntimeError(
+                f"E5 forced Sparse producer was not honored for {producer}: {sparse_counts!r}"
+            )
+        expected_fallback = producer == "pvs-sparse-materialized"
+        if execution.get("exhaustiveFallback") is not expected_fallback:
+            raise RuntimeError(f"E5 fallback state does not match the selected producer {producer}")
 
     def _exact_rrf(
         self,

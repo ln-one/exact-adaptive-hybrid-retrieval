@@ -19,6 +19,7 @@ from canonical_runner.client import QueryClient
 from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.e3 import E3Config, run_e3
 from canonical_runner.e4 import E4Config, run_e4
+from canonical_runner.e5 import E5Config, run_e5
 from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
 from canonical_runner.provenance import canonical_hash
@@ -149,6 +150,24 @@ class RunnerConfigTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "seeds"):
             run_e4(config)
+
+    def test_e5_rejects_invalid_process_start_count(self) -> None:
+        config = E5Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+            system_binary=Path("/unused"),
+            system_build_manifest=Path("/unused"),
+            process_starts=0,
+        )
+        with self.assertRaisesRegex(ValueError, "process starts"):
+            run_e5(config)
 
 
 class ManagedServerTests(unittest.TestCase):
@@ -532,6 +551,53 @@ class ClientTests(unittest.TestCase):
                 limit=20,
             )
         self.assertEqual(result.point_ids, (1,))
+
+    def test_e5_client_rejects_a_silent_dense_fallback(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(
+                request.url.path,
+                "/internal/collections/c/points/query/exact-rrf-producer",
+            )
+            self.assertEqual(request.url.params["producer"], "pvs-pbm")
+            return httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "guarantee": {
+                            "scope": "selected-local-shards-frozen-segment-view",
+                            "orderedTopKExact": True,
+                            "tieBreak": "point-identity-ascending",
+                            "channelInput": "exact-channel-rank-streams",
+                        },
+                        "execution": {
+                            "plan": "canonical-e5-pvs-pbm",
+                            "exhaustiveFallback": False,
+                            "producer": {
+                                "densePvsSegments": 0,
+                                "denseScalarSegments": 1,
+                                "denseScanSegments": 0,
+                                "sparsePbmSegments": 1,
+                                "sparseMaterializedSegments": 0,
+                            },
+                        },
+                    }
+                },
+            )
+
+        with (
+            QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client,
+            self.assertRaisesRegex(RuntimeError, "forced Dense producer"),
+        ):
+            client.producer_rrf(
+                self.query,
+                producer="pvs-pbm",
+                dense_name="dense",
+                sparse_name="sparse",
+                k=60,
+                weights=(1.0, 1.0),
+                limit=20,
+            )
 
 
 if __name__ == "__main__":

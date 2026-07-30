@@ -43,12 +43,12 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         raise ValueError("publication log was produced from a dirty repository")
     if require_clean and run.get("parameters", {}).get("queryLimit") is not None:
         raise ValueError("query-limited development log is not publication evidence")
-    if require_clean and run.get("experiment") in {"E2", "E3"}:
+    if require_clean and run.get("experiment") in {"E2", "E3", "E5"}:
         provenance = run.get("serverProvenance")
         if not isinstance(provenance, dict) or provenance.get("mode") != (
             "managed-isolated-snapshot"
         ):
-            raise ValueError("publication E2/E3 requires a managed binary and isolated snapshot")
+            raise ValueError("publication E2/E3/E5 requires a managed binary and isolated snapshot")
         binary_sha256 = provenance.get("binarySha256")
         if run.get("systemArtifact") != f"sha256:{binary_sha256}":
             raise ValueError("system artifact is not bound to the managed binary")
@@ -136,6 +136,71 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
             or len(query_ids) != len(set(query_ids))
         ):
             raise ValueError("E4 log does not contain the declared case matrix")
+    elif run.get("experiment") == "E5":
+        parameters = run.get("parameters", {})
+        producers = parameters.get("producers")
+        process_starts = parameters.get("processStarts")
+        repetitions = parameters.get("repetitions")
+        warmups = parameters.get("warmups")
+        if (
+            not isinstance(producers, list)
+            or not producers
+            or len(producers) != len(set(producers))
+            or not isinstance(process_starts, int)
+            or process_starts <= 0
+            or not isinstance(repetitions, int)
+            or repetitions <= 0
+            or not isinstance(warmups, int)
+            or warmups < 0
+        ):
+            raise ValueError("E5 run is missing its producer/observation matrix")
+        observation_ids = [
+            (
+                record.get("queryId"),
+                record.get("processStart"),
+                record.get("repetition"),
+                record.get("warmup"),
+            )
+            for record in queries
+        ]
+        if len(observation_ids) != len(set(observation_ids)):
+            raise ValueError("duplicate E5 query observation in canonical log")
+        expected = summary.get("uniqueQueries", 0) * process_starts * (warmups + repetitions)
+        if len(queries) != expected:
+            raise ValueError("E5 log does not contain the declared observation matrix")
+        for record in queries:
+            if record.get("status") not in {"ok", "mismatch"}:
+                continue
+            measurements = record.get("measurements")
+            outputs = record.get("orderedIdsByProducer")
+            order = record.get("counterbalanceOrder")
+            if (
+                not isinstance(measurements, dict)
+                or set(measurements) != set(producers)
+                or not isinstance(outputs, dict)
+                or set(outputs) != set(producers)
+                or not isinstance(order, list)
+                or set(order) != set(producers)
+                or len(order) != len(producers)
+            ):
+                raise ValueError("E5 observation is missing a complete producer matrix")
+            reference = outputs.get(parameters.get("referenceProducer"))
+            mismatch_variants = [
+                producer for producer in producers if outputs[producer] != reference
+            ]
+            if record.get("mismatchVariants") != mismatch_variants:
+                raise ValueError("E5 mismatch producer list is inconsistent")
+            if (record.get("status") == "mismatch") is not bool(mismatch_variants):
+                raise ValueError("E5 status is inconsistent with producer outputs")
+            for producer in producers:
+                measurement = measurements[producer]
+                if (
+                    not isinstance(measurement, dict)
+                    or not isinstance(measurement.get("latencyNs"), int)
+                    or measurement["latencyNs"] <= 0
+                    or not isinstance(measurement.get("producer"), dict)
+                ):
+                    raise ValueError("E5 producer measurement is incomplete")
     elif len(query_ids) != len(set(query_ids)):
         raise ValueError("duplicate queryId in canonical log")
 

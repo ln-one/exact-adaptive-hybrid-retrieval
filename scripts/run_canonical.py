@@ -10,11 +10,13 @@ from pathlib import Path
 from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.e3 import DEFAULT_DEPTHS, E3Config, run_e3
 from canonical_runner.e4 import DEFAULT_SEEDS, DEFAULT_SIZES, E4Config, run_e4
+from canonical_runner.e5 import E5Config, run_e5
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.synthetic import REGIMES
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
 E2_SYSTEM_COMMIT = "ddeaed679322c825b23e9107e65e5ddbaafe4d9c"
+E5_SYSTEM_COMMIT = "069f7644baf65185ecda12c219545c214552ac01"
 
 
 def add_common_arguments(
@@ -74,6 +76,13 @@ def parse_args() -> argparse.Namespace:
     e4.add_argument("--weights", nargs=2, type=float, default=(1.0, 1.0))
     e4.add_argument("--batch-size", type=int, default=16)
     e4.add_argument("--allow-dirty", action="store_true")
+    e5 = subparsers.add_parser("e5", help="proof-driven Dense/Sparse producer ablation")
+    add_common_arguments(e5, system_commit=E5_SYSTEM_COMMIT)
+    e5.add_argument("--system-binary", type=Path, required=True)
+    e5.add_argument("--system-build-manifest", type=Path, required=True)
+    e5.add_argument("--warmups", type=int, default=2)
+    e5.add_argument("--repetitions", type=int, default=5)
+    e5.add_argument("--process-starts", type=int, default=3)
     return parser.parse_args()
 
 
@@ -183,6 +192,39 @@ def main() -> None:
                 rrf_k=args.rrf_k,
                 weights=tuple(args.weights),
                 batch_size=args.batch_size,
+                allow_dirty=args.allow_dirty,
+            )
+        )
+        print(json.dumps(summary, sort_keys=True))
+        if (
+            summary["mismatchQueries"] > 0
+            or summary["timeoutQueries"] > 0
+            or summary["errorQueries"] > 0
+        ):
+            raise SystemExit(2)
+    elif args.experiment == "e5":
+        summary = run_e5(
+            E5Config(
+                artifact_root=args.artifact_root,
+                dataset=args.dataset,
+                collection=args.collection,
+                output=args.output,
+                bench_repo=args.bench_repo,
+                system_repo=args.system_repo,
+                system_commit=args.system_commit,
+                system_artifact=args.system_artifact,
+                hardware_profile=args.hardware_profile,
+                system_binary=args.system_binary,
+                system_build_manifest=args.system_build_manifest,
+                dense_name=args.dense_name,
+                sparse_name=args.sparse_name,
+                limit=args.limit,
+                rrf_k=args.rrf_k,
+                weights=tuple(args.weights),
+                warmups=args.warmups,
+                repetitions=args.repetitions,
+                process_starts=args.process_starts,
+                query_limit=args.query_limit,
                 allow_dirty=args.allow_dirty,
             )
         )
