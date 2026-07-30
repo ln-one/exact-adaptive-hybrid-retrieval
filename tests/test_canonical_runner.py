@@ -67,6 +67,7 @@ class CollectionSchemaTests(unittest.TestCase):
                 }
             },
         )
+        self.assertEqual(schema["optimizers_config"], {"indexing_threshold": 1})
         self.assertEqual(schema["shard_number"], 2)
 
     def test_empty_sparse_document_is_a_valid_zero_support_vector(self) -> None:

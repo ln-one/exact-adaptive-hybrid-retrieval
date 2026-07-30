@@ -36,6 +36,10 @@ def collection_schema(
                 "always_ram": True,
             }
         }
+        # Canonical small corpora must still be converted into immutable
+        # indexed Segments; otherwise neither PBM nor persisted Dense
+        # certificates exists below Qdrant's default 10k threshold.
+        schema["optimizers_config"] = {"indexing_threshold": 1}
     return schema
 
 
