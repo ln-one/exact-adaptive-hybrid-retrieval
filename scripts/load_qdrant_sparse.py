@@ -11,9 +11,8 @@ from pathlib import Path
 
 import httpx
 import pyarrow.parquet as pq
-
-from load_qdrant_dense import point_id
 from dataset_gate import assert_dataset_eligible
+from load_qdrant_dense import point_id
 
 
 def sha256_file(path: Path) -> str:
@@ -69,7 +68,9 @@ def main() -> None:
     try:
         for name in manifest["shards"]["documents"]:
             shard = base / name
-            for batch in pq.ParquetFile(shard).iter_batches(batch_size=args.batch_size, columns=["id", "indices", "values"]):
+            for batch in pq.ParquetFile(shard).iter_batches(
+                batch_size=args.batch_size, columns=["id", "indices", "values"]
+            ):
                 records = batch.to_pydict()
                 points = []
                 for external_id, indices, values in zip(
@@ -94,7 +95,11 @@ def main() -> None:
                     print(json.dumps({"dataset": args.dataset, "sent": sent}), flush=True)
     finally:
         client.close()
-    print(json.dumps({"collection": args.collection, "dataset": args.dataset, "points": sent}, sort_keys=True))
+    print(
+        json.dumps(
+            {"collection": args.collection, "dataset": args.dataset, "points": sent}, sort_keys=True
+        )
+    )
 
 
 if __name__ == "__main__":

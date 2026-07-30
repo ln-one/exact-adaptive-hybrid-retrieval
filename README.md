@@ -49,3 +49,48 @@ To load a verified Dense/Sparse pair later, create a matching named-vector
 collection, then run `load_qdrant_dense.py` followed by `load_qdrant_sparse.py`.
 The sparse loader uses Qdrant's vector-update endpoint so it does not overwrite
 the Dense vector already stored for the same deterministic point identity.
+
+## Canonical experiment runner
+
+`run_canonical.py` is the thin publication harness. Its first executable family
+is E1 ordered parity: Qdrant exact channel queries produce the exhaustive Dense
+and Sparse orders, the runner applies Stratumind's frozen WRRF formula and
+identity tie rule, and the Production `exact-rrf` response must match.
+
+Create the Collection with the explicit Production profile:
+
+```bash
+.venv/bin/python scripts/create_qdrant_collection.py \
+  --url http://127.0.0.1:6333 \
+  --collection ed-wrrf-nfcorpus \
+  --exact-rank-profile dense_sparse_v1
+```
+
+After loading both representations, run E1:
+
+```bash
+.venv/bin/python scripts/run_canonical.py e1 \
+  --artifact-root /Users/ln1/Projects/stratumind-artifacts/canonical-v1 \
+  --dataset nfcorpus \
+  --collection ed-wrrf-nfcorpus \
+  --system-repo /path/to/frozen/Stratumind \
+  --system-artifact sha256:<container-or-binary-digest> \
+  --output /path/to/results/e1-nfcorpus.jsonl
+```
+
+Canonical execution refuses dirty source repositories. `--allow-dirty` exists
+only for development dry runs; such logs carry `"dirty": true` and fail the
+publication validator by default.
+
+E1 latency is correctness-instrumentation latency: the exhaustive oracle is
+queried before the method and the record is marked `correctness-validation`.
+It must not be copied into the E2 performance table.
+
+```bash
+.venv/bin/python scripts/validate_canonical_log.py \
+  /path/to/results/e1-nfcorpus.jsonl
+```
+
+The live exhaustive HTTP oracle is intentionally bounded to small corpora.
+Larger datasets require a separately frozen exhaustive-oracle artifact rather
+than returning millions of identities through one HTTP response.

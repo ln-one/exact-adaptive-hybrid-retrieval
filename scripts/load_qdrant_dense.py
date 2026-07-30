@@ -11,9 +11,7 @@ from pathlib import Path
 import httpx
 import numpy as np
 import pyarrow.parquet as pq
-
 from dataset_gate import assert_dataset_eligible
-
 
 POINT_NAMESPACE = uuid.UUID("a0541185-c167-51be-9665-4c5e739d75d3")
 
@@ -56,10 +54,15 @@ def main() -> None:
     try:
         for spec in manifest["shards"]:
             shard = base / spec["name"]
-            for record_batch in pq.ParquetFile(shard).iter_batches(batch_size=args.batch_size, columns=["id", "vector"]):
+            for record_batch in pq.ParquetFile(shard).iter_batches(
+                batch_size=args.batch_size, columns=["id", "vector"]
+            ):
                 values = record_batch.to_pydict()
                 vectors = np.asarray(values["vector"], dtype=np.float32)
-                if vectors.shape != (len(values["id"]), manifest["dimension"]) or not np.isfinite(vectors).all():
+                if (
+                    vectors.shape != (len(values["id"]), manifest["dimension"])
+                    or not np.isfinite(vectors).all()
+                ):
                     raise RuntimeError(f"invalid vector batch: {shard.name}")
                 payload = {
                     "points": [
@@ -82,7 +85,11 @@ def main() -> None:
                     print(json.dumps({"dataset": args.dataset, "sent": sent}), flush=True)
     finally:
         client.close()
-    print(json.dumps({"collection": args.collection, "dataset": args.dataset, "points": sent}, sort_keys=True))
+    print(
+        json.dumps(
+            {"collection": args.collection, "dataset": args.dataset, "points": sent}, sort_keys=True
+        )
+    )
 
 
 if __name__ == "__main__":
