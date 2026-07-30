@@ -22,6 +22,7 @@ from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.server import sha256_file
 from canonical_runner.validation import validate_log
 from create_qdrant_collection import collection_schema
+from load_qdrant_sparse import valid_sparse_vector
 
 
 class FusionTests(unittest.TestCase):
@@ -51,6 +52,9 @@ class CollectionSchemaTests(unittest.TestCase):
         )
         self.assertEqual(schema["exact_rank_config"], {"profile": "dense_sparse_v1"})
         self.assertEqual(schema["shard_number"], 2)
+
+    def test_empty_sparse_document_is_a_valid_zero_support_vector(self) -> None:
+        self.assertTrue(valid_sparse_vector([], []))
 
 
 class RunnerConfigTests(unittest.TestCase):

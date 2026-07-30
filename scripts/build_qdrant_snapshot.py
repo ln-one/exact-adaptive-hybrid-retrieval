@@ -31,8 +31,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _run_loader(script: Path, args: argparse.Namespace, url: str) -> None:
-    subprocess.run(
+def _run_loader(script: Path, args: argparse.Namespace, url: str) -> dict[str, object]:
+    completed = subprocess.run(
         [
             sys.executable,
             str(script),
@@ -48,7 +48,17 @@ def _run_loader(script: Path, args: argparse.Namespace, url: str) -> None:
         ],
         check=True,
         cwd=script.parents[1],
+        capture_output=True,
+        text=True,
     )
+    print(completed.stdout, end="")
+    lines = [line for line in completed.stdout.splitlines() if line.strip()]
+    if not lines:
+        raise RuntimeError(f"canonical loader produced no receipt: {script.name}")
+    receipt = json.loads(lines[-1])
+    if not isinstance(receipt, dict):
+        raise RuntimeError(f"canonical loader receipt is not an object: {script.name}")
+    return receipt
 
 
 def _collection_info(client: httpx.Client, collection: str) -> dict[str, object]:
@@ -93,8 +103,15 @@ def main() -> None:
             )
             response = client.put(f"/collections/{args.collection}", json=schema)
             response.raise_for_status()
-            _run_loader(scripts / "load_qdrant_dense.py", args, server.url)
-            _run_loader(scripts / "load_qdrant_sparse.py", args, server.url)
+            dense_receipt = _run_loader(scripts / "load_qdrant_dense.py", args, server.url)
+            sparse_receipt = _run_loader(scripts / "load_qdrant_sparse.py", args, server.url)
+            if dense_receipt.get("points") != snapshot.document_count:
+                raise RuntimeError("Dense loader receipt does not cover the canonical corpus")
+            if (
+                int(sparse_receipt.get("points", -1)) + int(sparse_receipt.get("empty", -1))
+                != snapshot.document_count
+            ):
+                raise RuntimeError("Sparse loader receipt does not cover the canonical corpus")
 
             deadline = time.monotonic() + args.optimizer_timeout
             stable_since: float | None = None
@@ -144,6 +161,10 @@ def main() -> None:
                     "sourceManifestSha256": snapshot.source_manifest_sha256,
                     "denseManifestSha256": snapshot.dense_manifest_sha256,
                     "sparseManifestSha256": snapshot.sparse_manifest_sha256,
+                },
+                "loadReceipts": {
+                    "dense": dense_receipt,
+                    "sparse": sparse_receipt,
                 },
                 "collectionConfigSha256": canonical_hash(info["config"]),
                 "snapshot": {

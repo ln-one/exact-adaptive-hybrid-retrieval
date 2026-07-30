@@ -65,6 +65,7 @@ def main() -> None:
     manifest = verified_manifest(base)
     client = httpx.Client(base_url=args.url.rstrip("/"), timeout=120.0)
     sent = 0
+    empty = 0
     try:
         for name in manifest["shards"]["documents"]:
             shard = base / name
@@ -78,18 +79,22 @@ def main() -> None:
                 ):
                     if not valid_sparse_vector(indices, values):
                         raise RuntimeError(f"invalid Sparse vector in {shard.name}: {external_id}")
+                    if not indices:
+                        empty += 1
+                        continue
                     points.append(
                         {
                             "id": point_id(args.dataset, external_id),
                             "vector": {args.vector_name: {"indices": indices, "values": values}},
                         }
                     )
-                response = client.put(
-                    f"/collections/{args.collection}/points/vectors",
-                    params={"wait": str(args.wait).lower()},
-                    json={"points": points},
-                )
-                response.raise_for_status()
+                if points:
+                    response = client.put(
+                        f"/collections/{args.collection}/points/vectors",
+                        params={"wait": str(args.wait).lower()},
+                        json={"points": points},
+                    )
+                    response.raise_for_status()
                 sent += len(points)
                 if sent % 10_000 == 0:
                     print(json.dumps({"dataset": args.dataset, "sent": sent}), flush=True)
@@ -97,7 +102,13 @@ def main() -> None:
         client.close()
     print(
         json.dumps(
-            {"collection": args.collection, "dataset": args.dataset, "points": sent}, sort_keys=True
+            {
+                "collection": args.collection,
+                "dataset": args.dataset,
+                "points": sent,
+                "empty": empty,
+            },
+            sort_keys=True,
         )
     )
 
