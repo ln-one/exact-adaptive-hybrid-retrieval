@@ -56,7 +56,9 @@ def main() -> None:
     ]
     if args.features:
         recorded_command.extend(["--features", args.features])
-    command = [str(args.cargo.resolve(strict=True)), *recorded_command[1:]]
+    if not args.cargo.is_file() or not args.rustc.is_file():
+        raise FileNotFoundError("canonical Rust toolchain proxy is missing")
+    command = [str(args.cargo), *recorded_command[1:]]
     environment = os.environ.copy()
     environment["RUSTFLAGS"] = args.rustflags
     subprocess.run(command, cwd=repo, env=environment, check=True)
@@ -76,12 +78,8 @@ def main() -> None:
             "toolchain": args.toolchain,
             "features": args.features.split(",") if args.features else [],
             "rustflags": args.rustflags,
-            "rustc": _version(
-                [str(args.rustc.resolve(strict=True)), f"+{args.toolchain}", "-Vv"], repo
-            ),
-            "cargo": _version(
-                [str(args.cargo.resolve(strict=True)), f"+{args.toolchain}", "-V"], repo
-            ),
+            "rustc": _version([str(args.rustc), f"+{args.toolchain}", "-Vv"], repo),
+            "cargo": _version([str(args.cargo), f"+{args.toolchain}", "-V"], repo),
             "target": platform.machine(),
             "profile": "release",
         },
