@@ -18,6 +18,14 @@ class ExactRrfResult:
     execution: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class ExactChannelPrefix:
+    point_ids: tuple[PointId, ...]
+    fetched_points: int
+    request_count: int
+    exhausted: bool
+
+
 class QueryClient:
     def __init__(
         self,
@@ -77,6 +85,29 @@ class QueryClient:
         dense_name: str,
         sparse_name: str,
     ) -> list[PointId]:
+        return list(
+            self.exact_channel_prefix(
+                query,
+                channel=channel,
+                limit=limit,
+                corpus_points=limit,
+                dense_name=dense_name,
+                sparse_name=sparse_name,
+            ).point_ids
+        )
+
+    def exact_channel_prefix(
+        self,
+        query: QueryInput,
+        *,
+        channel: str,
+        limit: int,
+        corpus_points: int,
+        dense_name: str,
+        sparse_name: str,
+    ) -> ExactChannelPrefix:
+        if limit <= 0 or corpus_points <= 0:
+            raise ValueError("channel prefix limit and corpus size must be positive")
         if channel == "dense":
             vector: object = query.dense
             using = dense_name
@@ -85,6 +116,30 @@ class QueryClient:
             using = sparse_name
         else:
             raise ValueError(f"unsupported channel: {channel}")
+        target = min(limit, corpus_points)
+        fetch_limit = min(corpus_points, target + 1)
+        request_count = 0
+        while True:
+            request_count += 1
+            scored = self._exact_channel_scores(vector=vector, using=using, limit=fetch_limit)
+            exhausted = len(scored) < fetch_limit or fetch_limit == corpus_points
+            boundary_closed = len(scored) <= target or scored[target - 1][1] > scored[target][1]
+            if exhausted or boundary_closed:
+                return ExactChannelPrefix(
+                    point_ids=tuple(identity for identity, _ in scored[:target]),
+                    fetched_points=len(scored),
+                    request_count=request_count,
+                    exhausted=exhausted,
+                )
+            fetch_limit = min(corpus_points, max(fetch_limit + 1, fetch_limit * 2))
+
+    def _exact_channel_scores(
+        self,
+        *,
+        vector: object,
+        using: str,
+        limit: int,
+    ) -> list[tuple[PointId, float]]:
         response = self._client.post(
             f"/collections/{self.collection}/points/query",
             json={
@@ -97,8 +152,7 @@ class QueryClient:
             },
         )
         response.raise_for_status()
-        payload = response.json()
-        points = payload.get("result", {}).get("points")
+        points = response.json().get("result", {}).get("points")
         if not isinstance(points, list):
             raise RuntimeError("Qdrant exact channel response is missing result.points")
         scored: list[tuple[PointId, float]] = []
@@ -118,7 +172,7 @@ class QueryClient:
         if len(identities) != len(set(identities)):
             raise RuntimeError("Qdrant exact channel returned duplicate identities")
         scored.sort(key=lambda item: (-item[1], identity_key(item[0])))
-        return [identity for identity, _ in scored]
+        return scored
 
     def exact_rrf(
         self,

@@ -12,16 +12,18 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+from aggregate_e3 import aggregate as aggregate_e3
+from build_qdrant_snapshot import _expected_indexed_vectors
 from canonical_runner.artifacts import QueryInput
 from canonical_runner.client import QueryClient
 from canonical_runner.e2 import E2Config, run_e2
+from canonical_runner.e3 import E3Config, run_e3
 from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
 from canonical_runner.provenance import canonical_hash
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.server import sha256_file
 from canonical_runner.validation import validate_log
-from build_qdrant_snapshot import _expected_indexed_vectors
 from create_qdrant_collection import collection_schema
 from load_qdrant_sparse import valid_sparse_vector
 
@@ -117,6 +119,23 @@ class RunnerConfigTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(RuntimeError, "managed --system-binary"):
             run_e2(config)
+
+    def test_e3_rejects_unsorted_or_duplicate_depths(self) -> None:
+        config = E3Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            url="http://unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+            depths=(20, 20),
+        )
+        with self.assertRaisesRegex(ValueError, "unique and strictly increasing"):
+            run_e3(config)
 
 
 class ManagedServerTests(unittest.TestCase):
@@ -238,6 +257,97 @@ class ValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "dirty repository"):
                 validate_log(path)
 
+    def test_e3_aggregation_treats_fixed_depth_mismatch_as_a_result(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "e3.jsonl"
+            run = {
+                "recordType": "run",
+                "schema": "ed-wrrf-results-v1",
+                "runId": "r1",
+                "experiment": "E3",
+                "dataset": "test",
+                "dirty": False,
+                "systemArtifact": f"sha256:{'a' * 64}",
+                "serverProvenance": {
+                    "mode": "managed-isolated-snapshot",
+                    "binarySha256": "a" * 64,
+                    "snapshotSha256": "b" * 64,
+                    "collectionSnapshotManifestSha256": "c" * 64,
+                    "systemBuildManifestSha256": "d" * 64,
+                },
+                "parameters": {
+                    "queryLimit": None,
+                    "depths": [20, 50],
+                    "limit": 1,
+                    "rrfK": 60,
+                    "weights": [1.0, 1.0],
+                },
+            }
+            observations = [
+                {
+                    "recordType": "query",
+                    "runId": "r1",
+                    "queryId": "q1",
+                    "sequence": 0,
+                    "depth": 20,
+                    "status": "mismatch",
+                    "orderedIds": [2],
+                    "oracleOrderedIds": [1],
+                    "orderedResultSha256": canonical_hash([2]),
+                    "oracleOrderedResultSha256": canonical_hash([1]),
+                    "membershipMismatch": True,
+                    "orderMismatch": False,
+                    "candidateUnionContainsOracle": False,
+                    "oracleRecall": 0.0,
+                    "exactPrefixLength": 0,
+                    "candidateUnionSize": 2,
+                    "exposedRanks": 40,
+                },
+                {
+                    "recordType": "query",
+                    "runId": "r1",
+                    "queryId": "q1",
+                    "sequence": 1,
+                    "depth": 50,
+                    "status": "ok",
+                    "orderedIds": [1],
+                    "oracleOrderedIds": [1],
+                    "orderedResultSha256": canonical_hash([1]),
+                    "oracleOrderedResultSha256": canonical_hash([1]),
+                    "membershipMismatch": False,
+                    "orderMismatch": False,
+                    "candidateUnionContainsOracle": True,
+                    "oracleRecall": 1.0,
+                    "exactPrefixLength": 1,
+                    "candidateUnionSize": 3,
+                    "exposedRanks": 100,
+                },
+            ]
+            summary = {
+                "recordType": "summary",
+                "runId": "r1",
+                "attemptedQueries": 2,
+                "uniqueQueries": 1,
+                "okQueries": 1,
+                "mismatchQueries": 1,
+                "timeoutQueries": 0,
+                "errorQueries": 0,
+                "queryRecordSha256": canonical_hash(
+                    [canonical_hash(record) for record in observations]
+                ),
+            }
+            path.write_text(
+                "".join(json.dumps(record) + "\n" for record in [run, *observations, summary]),
+                encoding="utf-8",
+            )
+            path.with_suffix(".jsonl.sha256").write_text(
+                f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n",
+                encoding="utf-8",
+            )
+            result = aggregate_e3(path)
+            self.assertEqual(result["frontier"][0]["orderedExact"]["estimate"], 0.0)
+            self.assertEqual(result["frontier"][1]["orderedExact"]["estimate"], 1.0)
+
 
 class ClientTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -278,6 +388,38 @@ class ClientTests(unittest.TestCase):
                 "00000000-0000-0000-0000-000000000002",
             ],
         )
+
+    def test_exact_channel_prefix_expands_until_boundary_tie_is_complete(self) -> None:
+        scored = [
+            {"id": 5, "score": 0.9},
+            {"id": 4, "score": 0.5},
+            {"id": 3, "score": 0.5},
+            {"id": 2, "score": 0.5},
+            {"id": 1, "score": 0.4},
+        ]
+        requested_limits: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            requested_limits.append(body["limit"])
+            return httpx.Response(
+                200,
+                json={"result": {"points": scored[: body["limit"]]}},
+            )
+
+        with QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client:
+            result = client.exact_channel_prefix(
+                self.query,
+                channel="dense",
+                limit=2,
+                corpus_points=5,
+                dense_name="dense",
+                sparse_name="sparse",
+            )
+        self.assertEqual(requested_limits, [3, 5])
+        self.assertEqual(result.point_ids, (5, 2))
+        self.assertEqual(result.request_count, 2)
+        self.assertTrue(result.exhausted)
 
     def test_exact_rrf_rejects_weakened_guarantee(self) -> None:
         def handler(_: httpx.Request) -> httpx.Response:

@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from canonical_runner.e2 import E2Config, run_e2
+from canonical_runner.e3 import DEFAULT_DEPTHS, E3Config, run_e3
 from canonical_runner.runner import E1Config, run_e1
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
@@ -50,6 +51,11 @@ def parse_args() -> argparse.Namespace:
     e2.add_argument("--system-build-manifest", type=Path)
     e2.add_argument("--warmups", type=int, default=2)
     e2.add_argument("--repetitions", type=int, default=5)
+    e3 = subparsers.add_parser("e3", help="exact fixed-prefix WRRF information frontier")
+    add_common_arguments(e3, system_commit=E2_SYSTEM_COMMIT)
+    e3.add_argument("--system-binary", type=Path)
+    e3.add_argument("--system-build-manifest", type=Path)
+    e3.add_argument("--depths", nargs="+", type=int, default=DEFAULT_DEPTHS)
     return parser.parse_args()
 
 
@@ -117,6 +123,34 @@ def main() -> None:
             or summary["timeoutQueries"] > 0
             or summary["errorQueries"] > 0
         ):
+            raise SystemExit(2)
+    elif args.experiment == "e3":
+        summary = run_e3(
+            E3Config(
+                artifact_root=args.artifact_root,
+                dataset=args.dataset,
+                collection=args.collection,
+                url=args.url,
+                output=args.output,
+                bench_repo=args.bench_repo,
+                system_repo=args.system_repo,
+                system_commit=args.system_commit,
+                system_artifact=args.system_artifact,
+                hardware_profile=args.hardware_profile,
+                system_binary=args.system_binary,
+                system_build_manifest=args.system_build_manifest,
+                dense_name=args.dense_name,
+                sparse_name=args.sparse_name,
+                limit=args.limit,
+                rrf_k=args.rrf_k,
+                weights=tuple(args.weights),
+                depths=tuple(args.depths),
+                query_limit=args.query_limit,
+                allow_dirty=args.allow_dirty,
+            )
+        )
+        print(json.dumps(summary, sort_keys=True))
+        if summary["timeoutQueries"] > 0 or summary["errorQueries"] > 0:
             raise SystemExit(2)
 
 

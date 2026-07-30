@@ -43,15 +43,15 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         raise ValueError("publication log was produced from a dirty repository")
     if require_clean and run.get("parameters", {}).get("queryLimit") is not None:
         raise ValueError("query-limited development log is not publication evidence")
-    if require_clean and run.get("experiment") == "E2":
+    if require_clean and run.get("experiment") in {"E2", "E3"}:
         provenance = run.get("serverProvenance")
         if not isinstance(provenance, dict) or provenance.get("mode") != (
             "managed-isolated-snapshot"
         ):
-            raise ValueError("publication E2 requires a managed binary and isolated snapshot")
+            raise ValueError("publication E2/E3 requires a managed binary and isolated snapshot")
         binary_sha256 = provenance.get("binarySha256")
         if run.get("systemArtifact") != f"sha256:{binary_sha256}":
-            raise ValueError("E2 system artifact is not bound to the managed binary")
+            raise ValueError("system artifact is not bound to the managed binary")
         for field in (
             "binarySha256",
             "snapshotSha256",
@@ -60,7 +60,7 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         ):
             value = provenance.get(field)
             if not isinstance(value, str) or len(value) != 64:
-                raise ValueError(f"E2 managed provenance is missing a SHA-256 field: {field}")
+                raise ValueError(f"managed provenance is missing a SHA-256 field: {field}")
     if any(record.get("runId") != run_id for record in records):
         raise ValueError("record runId mismatch")
 
@@ -93,6 +93,23 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
                 raise ValueError("E2 baseline did not report exhaustive termination")
             if exhaustive.get("sourceExhausted") != [True, True]:
                 raise ValueError("E2 baseline did not exhaust both channel streams")
+    elif run.get("experiment") == "E3":
+        depths = run.get("parameters", {}).get("depths")
+        if (
+            not isinstance(depths, list)
+            or not depths
+            or any(not isinstance(depth, int) or depth <= 0 for depth in depths)
+            or depths != sorted(set(depths))
+        ):
+            raise ValueError("E3 run is missing unique increasing fixed-prefix depths")
+        observation_ids = [(record.get("queryId"), record.get("depth")) for record in queries]
+        if len(observation_ids) != len(set(observation_ids)):
+            raise ValueError("duplicate E3 query/depth observation in canonical log")
+        if any(record.get("depth") not in depths for record in queries):
+            raise ValueError("E3 query observation uses an undeclared depth")
+        expected_observations = summary.get("uniqueQueries", 0) * len(depths)
+        if len(queries) != expected_observations:
+            raise ValueError("E3 log does not contain a complete query/depth matrix")
     elif len(query_ids) != len(set(query_ids)):
         raise ValueError("duplicate queryId in canonical log")
 
