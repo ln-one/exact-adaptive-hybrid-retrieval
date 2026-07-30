@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from canonical_runner.artifacts import QueryInput
 from canonical_runner.client import QueryClient
+from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
 from canonical_runner.provenance import canonical_hash
@@ -68,6 +69,23 @@ class RunnerConfigTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "weights"):
             run_e1(config)
+
+    def test_e2_rejects_invalid_repetition_count_before_repository_access(self) -> None:
+        config = E2Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            url="http://unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+            repetitions=0,
+        )
+        with self.assertRaisesRegex(ValueError, "repetitions"):
+            run_e2(config)
 
 
 class AtomicLogTests(unittest.TestCase):
@@ -247,6 +265,43 @@ class ClientTests(unittest.TestCase):
                 weights=(1.0, 1.0),
                 limit=20,
             )
+
+    def test_exhaustive_rrf_requires_the_internal_plan_and_drained_sources(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(
+                request.url.path,
+                "/internal/collections/c/points/query/exact-rrf-exhaustive",
+            )
+            return httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "guarantee": {
+                            "scope": "selected-local-shards-frozen-segment-view",
+                            "orderedTopKExact": True,
+                            "tieBreak": "point-identity-ascending",
+                            "channelInput": "exact-channel-rank-streams",
+                        },
+                        "execution": {
+                            "plan": "exact-rank-session-exhaustive-benchmark-v1",
+                            "stopReason": "all-sources-exhausted",
+                            "sourceExhausted": [True, True],
+                        },
+                    }
+                },
+            )
+
+        with QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client:
+            result = client.exhaustive_rrf(
+                self.query,
+                dense_name="dense",
+                sparse_name="sparse",
+                k=60,
+                weights=(1.0, 1.0),
+                limit=20,
+            )
+        self.assertEqual(result.point_ids, (1,))
 
 
 if __name__ == "__main__":

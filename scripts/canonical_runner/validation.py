@@ -51,7 +51,29 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
     query_ids = [record.get("queryId") for record in queries]
     if any(not isinstance(query_id, str) or not query_id for query_id in query_ids):
         raise ValueError("queryId must be a non-empty string")
-    if len(query_ids) != len(set(query_ids)):
+    if run.get("experiment") == "E2":
+        observation_ids = [
+            (record.get("queryId"), record.get("repetition"), record.get("warmup"))
+            for record in queries
+        ]
+        if len(observation_ids) != len(set(observation_ids)):
+            raise ValueError("duplicate E2 query observation in canonical log")
+        for record in queries:
+            if not isinstance(record.get("warmup"), bool):
+                raise ValueError("E2 query observation is missing a warmup flag")
+            if not isinstance(record.get("repetition"), int):
+                raise ValueError("E2 query observation is missing a repetition")
+            if record.get("status") not in {"ok", "mismatch"}:
+                continue
+            dynamic = record.get("dynamic")
+            exhaustive = record.get("exhaustive")
+            if not isinstance(dynamic, dict) or not isinstance(exhaustive, dict):
+                raise ValueError("E2 observation is missing paired measurements")
+            if exhaustive.get("stopReason") != "all-sources-exhausted":
+                raise ValueError("E2 baseline did not report exhaustive termination")
+            if exhaustive.get("sourceExhausted") != [True, True]:
+                raise ValueError("E2 baseline did not exhaust both channel streams")
+    elif len(query_ids) != len(set(query_ids)):
         raise ValueError("duplicate queryId in canonical log")
 
     statuses = [record.get("status") for record in queries]

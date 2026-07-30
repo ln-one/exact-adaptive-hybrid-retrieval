@@ -126,8 +126,57 @@ class QueryClient:
         weights: tuple[float, float],
         limit: int,
     ) -> ExactRrfResult:
+        return self._exact_rrf(
+            query,
+            endpoint=f"/collections/{self.collection}/points/query/exact-rrf",
+            expected_plan="exact-rank-session-v1",
+            dense_name=dense_name,
+            sparse_name=sparse_name,
+            k=k,
+            weights=weights,
+            limit=limit,
+        )
+
+    def exhaustive_rrf(
+        self,
+        query: QueryInput,
+        *,
+        dense_name: str,
+        sparse_name: str,
+        k: int,
+        weights: tuple[float, float],
+        limit: int,
+    ) -> ExactRrfResult:
+        result = self._exact_rrf(
+            query,
+            endpoint=(f"/internal/collections/{self.collection}/points/query/exact-rrf-exhaustive"),
+            expected_plan="exact-rank-session-exhaustive-benchmark-v1",
+            dense_name=dense_name,
+            sparse_name=sparse_name,
+            k=k,
+            weights=weights,
+            limit=limit,
+        )
+        if result.execution.get("stopReason") != "all-sources-exhausted" or result.execution.get(
+            "sourceExhausted"
+        ) != [True, True]:
+            raise RuntimeError("same-producer exhaustive baseline did not drain both channels")
+        return result
+
+    def _exact_rrf(
+        self,
+        query: QueryInput,
+        *,
+        endpoint: str,
+        expected_plan: str,
+        dense_name: str,
+        sparse_name: str,
+        k: int,
+        weights: tuple[float, float],
+        limit: int,
+    ) -> ExactRrfResult:
         response = self._client.post(
-            f"/collections/{self.collection}/points/query/exact-rrf",
+            endpoint,
             json={
                 "exact_rrf": {
                     "dense": {"query": query.dense, "using": dense_name},
@@ -170,4 +219,6 @@ class QueryClient:
         execution = payload.get("execution")
         if not isinstance(execution, dict):
             raise RuntimeError("Stratumind response is missing execution telemetry")
+        if execution.get("plan") != expected_plan:
+            raise RuntimeError(f"Stratumind execution plan mismatch: {execution.get('plan')!r}")
         return ExactRrfResult(point_ids=identities, execution=execution)
