@@ -610,6 +610,55 @@ class ClientTests(unittest.TestCase):
                 limit=20,
             )
 
+    def test_forced_pvs_exhaustion_requires_selected_plan_and_drained_sources(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(
+                request.url.path,
+                "/internal/collections/c/points/query/exact-rrf-producer",
+            )
+            self.assertEqual(request.url.params["producer"], "pvs-pbm")
+            self.assertEqual(request.url.params["exhaustive"], "true")
+            return httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "guarantee": {
+                            "scope": "selected-local-shards-frozen-segment-view",
+                            "orderedTopKExact": True,
+                            "tieBreak": "point-identity-ascending",
+                            "channelInput": "exact-channel-rank-streams",
+                        },
+                        "execution": {
+                            "plan": "canonical-e2-pvs-pbm-exhaustive",
+                            "stopReason": "all-sources-exhausted",
+                            "sourceExhausted": [True, True],
+                            "exhaustiveFallback": False,
+                            "producer": {
+                                "densePvsSegments": 1,
+                                "denseScalarSegments": 0,
+                                "denseScanSegments": 0,
+                                "sparsePbmSegments": 1,
+                                "sparseMaterializedSegments": 0,
+                            },
+                        },
+                    }
+                },
+            )
+
+        with QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client:
+            result = client.producer_rrf(
+                self.query,
+                producer="pvs-pbm",
+                exhaustive=True,
+                dense_name="dense",
+                sparse_name="sparse",
+                k=60,
+                weights=(1.0, 1.0),
+                limit=20,
+            )
+        self.assertEqual(result.point_ids, (1,))
+
 
 if __name__ == "__main__":
     unittest.main()

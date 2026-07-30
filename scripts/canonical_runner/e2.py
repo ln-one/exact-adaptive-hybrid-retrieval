@@ -9,6 +9,7 @@ from collections.abc import Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -146,7 +147,8 @@ def _run_record(
             "warmups": config.warmups,
             "repetitions": config.repetitions,
             "queryLimit": config.query_limit,
-            "baseline": "same-pvs-pbm-producers-forced-to-exhaustion",
+            "producer": "pvs-pbm",
+            "baseline": "verified-pvs-pbm-producers-forced-to-exhaustion",
         },
         "startedAtUtc": datetime.now(UTC).isoformat(),
     }
@@ -182,6 +184,7 @@ def _measurement(result: ExactRrfResult, latency_ns: int) -> dict[str, Any]:
         "exhaustiveFallback": execution.get("exhaustiveFallback"),
         "stopReason": execution.get("stopReason"),
         "plan": execution.get("plan"),
+        "producer": execution.get("producer"),
     }
 
 
@@ -266,6 +269,12 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                         system_build_manifest_sha256,
                     )
                 )
+                dynamic_operation = partial(client.producer_rrf, producer="pvs-pbm")
+                exhaustive_operation = partial(
+                    client.producer_rrf,
+                    producer="pvs-pbm",
+                    exhaustive=True,
+                )
                 sequence = 0
                 observation_count = config.warmups + config.repetitions
                 for query_index, query in enumerate(queries):
@@ -277,15 +286,19 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                         validation_started = time.perf_counter_ns()
                         try:
                             if dynamic_first:
-                                dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
+                                dynamic, dynamic_ns = _invoke(dynamic_operation, query, config)
                                 exhaustive, exhaustive_ns = _invoke(
-                                    client.exhaustive_rrf, query, config
+                                    exhaustive_operation,
+                                    query,
+                                    config,
                                 )
                             else:
                                 exhaustive, exhaustive_ns = _invoke(
-                                    client.exhaustive_rrf, query, config
+                                    exhaustive_operation,
+                                    query,
+                                    config,
                                 )
-                                dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
+                                dynamic, dynamic_ns = _invoke(dynamic_operation, query, config)
                             actual = list(dynamic.point_ids)
                             oracle = list(exhaustive.point_ids)
                             membership_mismatch, order_mismatch = _mismatch(oracle, actual)

@@ -18,6 +18,13 @@ E5_PRODUCER_PLANS = {
     "pvs-sparse-materialized": "canonical-e5-pvs-sparse-materialized",
 }
 
+E2_EXHAUSTIVE_PRODUCER_PLANS = {
+    "pvs-pbm": "canonical-e2-pvs-pbm-exhaustive",
+    "scalar-pbm": "canonical-e2-scalar-pbm-exhaustive",
+    "scan-pbm": "canonical-e2-scan-pbm-exhaustive",
+    "pvs-sparse-materialized": "canonical-e2-pvs-sparse-materialized-exhaustive",
+}
+
 
 @dataclass(frozen=True)
 class ExactRrfResult:
@@ -233,6 +240,7 @@ class QueryClient:
         query: QueryInput,
         *,
         producer: str,
+        exhaustive: bool = False,
         dense_name: str,
         sparse_name: str,
         k: int,
@@ -240,14 +248,17 @@ class QueryClient:
         limit: int,
     ) -> ExactRrfResult:
         try:
-            expected_plan = E5_PRODUCER_PLANS[producer]
+            expected_plan = (
+                E2_EXHAUSTIVE_PRODUCER_PLANS if exhaustive else E5_PRODUCER_PLANS
+            )[producer]
         except KeyError as error:
-            raise ValueError(f"unsupported E5 producer: {producer}") from error
+            raise ValueError(f"unsupported exact producer: {producer}") from error
+        exhaustive_parameter = "&exhaustive=true" if exhaustive else ""
         result = self._exact_rrf(
             query,
             endpoint=(
                 f"/internal/collections/{self.collection}/points/query/"
-                f"exact-rrf-producer?producer={producer}"
+                f"exact-rrf-producer?producer={producer}{exhaustive_parameter}"
             ),
             expected_plan=expected_plan,
             dense_name=dense_name,
@@ -257,6 +268,11 @@ class QueryClient:
             limit=limit,
         )
         self._validate_e5_producer(result.execution, producer)
+        if exhaustive and (
+            result.execution.get("stopReason") != "all-sources-exhausted"
+            or result.execution.get("sourceExhausted") != [True, True]
+        ):
+            raise RuntimeError("forced exact producer baseline did not drain both channels")
         return result
 
     @staticmethod
