@@ -41,6 +41,8 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         raise ValueError("unsupported canonical log schema")
     if require_clean and run.get("dirty") is not False:
         raise ValueError("publication log was produced from a dirty repository")
+    if require_clean and run.get("parameters", {}).get("queryLimit") is not None:
+        raise ValueError("query-limited development log is not publication evidence")
     if any(record.get("runId") != run_id for record in records):
         raise ValueError("record runId mismatch")
 
