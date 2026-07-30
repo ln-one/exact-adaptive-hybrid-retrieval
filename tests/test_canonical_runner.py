@@ -13,7 +13,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from aggregate_e3 import aggregate as aggregate_e3
-from build_qdrant_snapshot import _expected_indexed_vectors
+from build_qdrant_snapshot import _collection_is_ready, _expected_indexed_vectors
 from canonical_runner.artifacts import QueryInput
 from canonical_runner.client import QueryClient
 from canonical_runner.e2 import E2Config, run_e2
@@ -80,6 +80,39 @@ class CollectionSchemaTests(unittest.TestCase):
                 {"points": 2, "empty": 1},
             ),
             5,
+        )
+
+    def test_collection_readiness_uses_exact_points_and_a_physical_lower_bound(self) -> None:
+        info = {
+            "status": "green",
+            # This field is a Segment-level progress estimate and deliberately
+            # disagrees with the exact count during a merge.
+            "points_count": 97,
+            "indexed_vectors_count": 201,
+        }
+        self.assertTrue(
+            _collection_is_ready(
+                info,
+                exact_points=100,
+                expected_points=100,
+                minimum_indexed_vectors=200,
+            )
+        )
+        self.assertFalse(
+            _collection_is_ready(
+                info,
+                exact_points=99,
+                expected_points=100,
+                minimum_indexed_vectors=200,
+            )
+        )
+        self.assertFalse(
+            _collection_is_ready(
+                {**info, "indexed_vectors_count": 199},
+                exact_points=100,
+                expected_points=100,
+                minimum_indexed_vectors=200,
+            )
         )
 
 

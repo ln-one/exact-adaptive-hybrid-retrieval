@@ -75,6 +75,16 @@ def _collection_info(client: httpx.Client, collection: str) -> dict[str, object]
     return result
 
 
+def _exact_point_count(client: httpx.Client, collection: str) -> int:
+    """Read the authoritative point cardinality, not a Segment progress estimate."""
+    response = client.post(f"/collections/{collection}/points/count", json={"exact": True})
+    response.raise_for_status()
+    result = response.json().get("result")
+    if not isinstance(result, dict) or not isinstance(result.get("count"), int):
+        raise RuntimeError("Qdrant exact point-count response is missing result.count")
+    return result["count"]
+
+
 def _expected_indexed_vectors(
     dense_receipt: dict[str, object],
     sparse_receipt: dict[str, object],
@@ -86,6 +96,30 @@ def _expected_indexed_vectors(
     the two loader point counts.
     """
     return int(dense_receipt["points"]) + int(sparse_receipt["points"])
+
+
+def _collection_is_ready(
+    info: dict[str, object],
+    *,
+    exact_points: int,
+    expected_points: int,
+    minimum_indexed_vectors: int,
+) -> bool:
+    """Validate a stable logical Collection before producer certification.
+
+    Qdrant's `indexed_vectors_count` is physical Segment telemetry. During a
+    vector update/merge it can retain transient physical entries, so equality
+    is not a logical integrity condition. Exact point identity/count and the
+    producer probes below are authoritative; the physical count is a lower
+    bound proving both named-vector loads reached the index.
+    """
+    indexed_vectors = info.get("indexed_vectors_count")
+    return (
+        info.get("status") == "green"
+        and exact_points == expected_points
+        and isinstance(indexed_vectors, int)
+        and indexed_vectors >= minimum_indexed_vectors
+    )
 
 
 def _producer_probe(
@@ -204,10 +238,11 @@ def main() -> None:
             stable_since: float | None = None
             while time.monotonic() < deadline:
                 info = _collection_info(client, args.collection)
-                ready = (
-                    info.get("status") == "green"
-                    and info.get("points_count") == snapshot.document_count
-                    and info.get("indexed_vectors_count") == expected_indexed_vectors
+                ready = _collection_is_ready(
+                    info,
+                    exact_points=_exact_point_count(client, args.collection),
+                    expected_points=snapshot.document_count,
+                    minimum_indexed_vectors=expected_indexed_vectors,
                 )
                 if ready:
                     stable_since = stable_since or time.monotonic()
