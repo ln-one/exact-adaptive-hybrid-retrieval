@@ -56,6 +56,7 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
             "binarySha256",
             "snapshotSha256",
             "collectionSnapshotManifestSha256",
+            "systemBuildManifestSha256",
         ):
             value = provenance.get(field)
             if not isinstance(value, str) or len(value) != 64:

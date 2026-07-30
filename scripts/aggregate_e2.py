@@ -69,6 +69,8 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
     ratios_by_query: dict[str, list[float]] = defaultdict(list)
     pull_ratios: list[list[float]] = [[], []]
     run_ids: list[str] = []
+    per_run: dict[str, dict[str, Any]] = {}
+    comparison_signature: str | None = None
     dataset: str | None = None
     wins = observations = 0
 
@@ -82,7 +84,43 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
                 dataset = run["dataset"]
             elif dataset != run["dataset"]:
                 raise ValueError("one E2 aggregate may contain only one dataset")
-            run_ids.append(run["runId"])
+            signature = json.dumps(
+                {
+                    field: run.get(field)
+                    for field in (
+                        "datasetManifestSha256",
+                        "denseManifestSha256",
+                        "sparseManifestSha256",
+                        "systemCommit",
+                        "systemArtifact",
+                        "benchCommit",
+                        "runnerSourceSha256",
+                        "buildProfile",
+                        "hardwareProfile",
+                        "architecture",
+                        "os",
+                        "cacheState",
+                        "collectionConfigSha256",
+                        "parameters",
+                        "serverProvenance",
+                    )
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            if comparison_signature is None:
+                comparison_signature = signature
+            elif comparison_signature != signature:
+                raise ValueError("E2 logs have incompatible provenance or experiment parameters")
+            run_id = run["runId"]
+            run_ids.append(run_id)
+            run_data = {
+                "dynamic": [],
+                "exhaustive": [],
+                "ratios": [],
+                "wins": 0,
+            }
+            per_run[run_id] = run_data
             for line in handle:
                 record = json.loads(line)
                 if record.get("recordType") != "query":
@@ -104,6 +142,10 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
                 ratios_by_query[record["queryId"]].append(ratio)
                 wins += dynamic_ns < exhaustive_ns
                 observations += 1
+                run_data["dynamic"].append(dynamic_ns)
+                run_data["exhaustive"].append(exhaustive_ns)
+                run_data["ratios"].append(ratio)
+                run_data["wins"] += dynamic_ns < exhaustive_ns
                 for channel, value in enumerate(record["sourcePullRatios"]):
                     if value is not None:
                         pull_ratios[channel].append(float(value))
@@ -114,7 +156,7 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
         raise ValueError("invalid E2 dynamic latency")
 
     return {
-        "schema": "ed-wrrf-e2-aggregate-v1",
+        "schema": "ed-wrrf-e2-aggregate-v2",
         "dataset": dataset,
         "runIds": sorted(run_ids),
         "measuredQueries": len(ratios_by_query),
@@ -125,6 +167,19 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
         },
         "pairedLatencyRatio": clustered_ratio_interval(ratios_by_query, seed=seed, samples=samples),
         "pairedWinRate": wins / observations,
+        "perRun": [
+            {
+                "runId": run_id,
+                "measuredObservations": len(data["ratios"]),
+                "latencyNs": {
+                    "edWrrf": percentile_summary(data["dynamic"]),
+                    "exhaustive": percentile_summary(data["exhaustive"]),
+                },
+                "pairedLatencyRatio": geometric_mean(np.asarray(data["ratios"], dtype=np.float64)),
+                "pairedWinRate": data["wins"] / len(data["ratios"]),
+            }
+            for run_id, data in sorted(per_run.items())
+        ],
         "sourcePullRatio": {
             "denseMedian": float(np.median(pull_ratios[0])),
             "sparseMedian": float(np.median(pull_ratios[1])),

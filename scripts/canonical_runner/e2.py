@@ -29,6 +29,7 @@ from .provenance import (
     git_revision,
     runner_source_sha256,
     runtime_metadata,
+    verify_system_build_manifest,
 )
 from .runner import SCHEMA, _mismatch, _sha256_output
 from .server import ManagedQdrant, ManagedServerEvidence, sha256_file
@@ -47,6 +48,7 @@ class E2Config:
     system_artifact: str
     hardware_profile: str
     system_binary: Path | None = None
+    system_build_manifest: Path | None = None
     dense_name: str = "dense"
     sparse_name: str = "sparse"
     limit: int = 20
@@ -77,6 +79,8 @@ def _validate(config: E2Config) -> None:
         raise RuntimeError(
             "publication E2 requires a managed --system-binary and canonical snapshot"
         )
+    if config.system_build_manifest is None and not config.allow_dirty:
+        raise RuntimeError("publication E2 requires --system-build-manifest")
 
 
 def _run_record(
@@ -88,6 +92,7 @@ def _run_record(
     collection_info: dict[str, Any],
     server_evidence: ManagedServerEvidence | None,
     collection_snapshot: CollectionSnapshot | None,
+    system_build_manifest_sha256: str | None,
 ) -> dict[str, Any]:
     runtime = runtime_metadata(config.hardware_profile)
     return {
@@ -109,6 +114,7 @@ def _run_record(
                 "binarySha256": server_evidence.binary_sha256,
                 "snapshotSha256": server_evidence.snapshot_sha256,
                 "collectionSnapshotManifestSha256": collection_snapshot.manifest_sha256,
+                "systemBuildManifestSha256": system_build_manifest_sha256,
             }
             if server_evidence is not None and collection_snapshot is not None
             else {"mode": "external-unbound-development"}
@@ -196,12 +202,19 @@ def run_e2(config: E2Config) -> dict[str, Any]:
         if config.system_binary is not None
         else None
     )
+    system_build_manifest_sha256 = None
     if config.system_binary is not None:
         binary_sha256 = sha256_file(config.system_binary)
         if config.system_artifact != f"sha256:{binary_sha256}":
             raise RuntimeError(
                 "system artifact does not match the managed Qdrant binary: "
                 f"{config.system_artifact} != sha256:{binary_sha256}"
+            )
+        if config.system_build_manifest is not None:
+            system_build_manifest_sha256 = verify_system_build_manifest(
+                config.system_build_manifest,
+                binary_sha256=binary_sha256,
+                system_commit=config.system_commit,
             )
     queries = snapshot.queries[: config.query_limit]
     run_id = f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:12]}"
@@ -250,6 +263,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                         initial_collection,
                         server_evidence,
                         collection_snapshot,
+                        system_build_manifest_sha256,
                     )
                 )
                 sequence = 0
