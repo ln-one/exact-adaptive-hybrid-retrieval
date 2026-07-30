@@ -57,6 +57,7 @@ class E2Config:
     weights: tuple[float, float] = (1.0, 1.0)
     warmups: int = 2
     repetitions: int = 5
+    request_timeout_seconds: float = 120.0
     query_limit: int | None = None
     allow_dirty: bool = False
 
@@ -70,6 +71,8 @@ def _validate(config: E2Config) -> None:
         raise ValueError("weights must be finite and non-negative with one positive value")
     if config.warmups < 0 or config.repetitions <= 0:
         raise ValueError("warmups must be non-negative and repetitions must be positive")
+    if not math.isfinite(config.request_timeout_seconds) or config.request_timeout_seconds <= 0:
+        raise ValueError("request timeout must be finite and positive")
     if config.query_limit is not None and config.query_limit <= 0:
         raise ValueError("query limit must be positive")
     if config.query_limit is not None and not config.allow_dirty:
@@ -146,9 +149,10 @@ def _run_record(
             "sparseName": config.sparse_name,
             "warmups": config.warmups,
             "repetitions": config.repetitions,
+            "requestTimeoutSeconds": config.request_timeout_seconds,
             "queryLimit": config.query_limit,
             "producer": "pvs-pbm",
-            "baseline": "verified-pvs-pbm-producers-forced-to-exhaustion",
+            "baseline": "parallel-native-bulk-exhaustive-channels",
         },
         "startedAtUtc": datetime.now(UTC).isoformat(),
     }
@@ -236,7 +240,11 @@ def run_e2(config: E2Config) -> dict[str, Any]:
     )
     with server_context as server_evidence:
         url = server_evidence.url if server_evidence is not None else config.url
-        with QueryClient(url, config.collection) as client:
+        with QueryClient(
+            url,
+            config.collection,
+            timeout_seconds=config.request_timeout_seconds,
+        ) as client:
             server_info = client.server_info()
             if server_evidence is not None and server_info.get("commit") != config.system_commit:
                 raise RuntimeError(

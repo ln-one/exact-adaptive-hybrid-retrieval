@@ -19,10 +19,10 @@ E5_PRODUCER_PLANS = {
 }
 
 E2_EXHAUSTIVE_PRODUCER_PLANS = {
-    "pvs-pbm": "canonical-e2-pvs-pbm-exhaustive",
-    "scalar-pbm": "canonical-e2-scalar-pbm-exhaustive",
-    "scan-pbm": "canonical-e2-scan-pbm-exhaustive",
-    "pvs-sparse-materialized": "canonical-e2-pvs-sparse-materialized-exhaustive",
+    "pvs-pbm": "canonical-e2-bulk-native-exhaustive",
+    "scalar-pbm": "canonical-e2-bulk-native-exhaustive",
+    "scan-pbm": "canonical-e2-bulk-native-exhaustive",
+    "pvs-sparse-materialized": "canonical-e2-bulk-native-exhaustive",
 }
 
 
@@ -267,13 +267,30 @@ class QueryClient:
             weights=weights,
             limit=limit,
         )
-        self._validate_e5_producer(result.execution, producer)
+        if exhaustive:
+            self._validate_bulk_exhaustive(result.execution)
+        else:
+            self._validate_e5_producer(result.execution, producer)
         if exhaustive and (
             result.execution.get("stopReason") != "all-sources-exhausted"
             or result.execution.get("sourceExhausted") != [True, True]
         ):
             raise RuntimeError("forced exact producer baseline did not drain both channels")
         return result
+
+    @staticmethod
+    def _validate_bulk_exhaustive(execution: dict[str, Any]) -> None:
+        telemetry = execution.get("producer")
+        if not isinstance(telemetry, dict):
+            raise RuntimeError("bulk exhaustive execution is missing producer telemetry")
+        dense_scan = telemetry.get("denseScanSegments")
+        sparse_materialized = telemetry.get("sparseMaterializedSegments")
+        if not isinstance(dense_scan, int) or dense_scan <= 0:
+            raise RuntimeError(f"bulk exhaustive did not use native Dense scans: {telemetry!r}")
+        if not isinstance(sparse_materialized, int) or sparse_materialized <= 0:
+            raise RuntimeError(
+                f"bulk exhaustive did not use native Sparse materialization: {telemetry!r}"
+            )
 
     @staticmethod
     def _validate_e5_producer(execution: dict[str, Any], producer: str) -> None:

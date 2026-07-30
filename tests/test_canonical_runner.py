@@ -643,7 +643,7 @@ class ClientTests(unittest.TestCase):
                 limit=20,
             )
 
-    def test_forced_pvs_exhaustion_requires_selected_plan_and_drained_sources(self) -> None:
+    def test_bulk_exhaustion_requires_native_plan_and_drained_sources(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             self.assertEqual(
                 request.url.path,
@@ -663,16 +663,16 @@ class ClientTests(unittest.TestCase):
                             "channelInput": "exact-channel-rank-streams",
                         },
                         "execution": {
-                            "plan": "canonical-e2-pvs-pbm-exhaustive",
+                            "plan": "canonical-e2-bulk-native-exhaustive",
                             "stopReason": "all-sources-exhausted",
                             "sourceExhausted": [True, True],
-                            "exhaustiveFallback": False,
+                            "exhaustiveFallback": True,
                             "producer": {
-                                "densePvsSegments": 1,
+                                "densePvsSegments": 0,
                                 "denseScalarSegments": 0,
-                                "denseScanSegments": 0,
-                                "sparsePbmSegments": 1,
-                                "sparseMaterializedSegments": 0,
+                                "denseScanSegments": 1,
+                                "sparsePbmSegments": 0,
+                                "sparseMaterializedSegments": 1,
                             },
                         },
                     }

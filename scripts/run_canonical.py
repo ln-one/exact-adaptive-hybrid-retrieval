@@ -55,6 +55,7 @@ def parse_args() -> argparse.Namespace:
     e2.add_argument("--system-build-manifest", type=Path)
     e2.add_argument("--warmups", type=int, default=2)
     e2.add_argument("--repetitions", type=int, default=5)
+    e2.add_argument("--request-timeout-seconds", type=float, default=120.0)
     e3 = subparsers.add_parser("e3", help="exact fixed-prefix WRRF information frontier")
     add_common_arguments(e3, system_commit=E2_SYSTEM_COMMIT)
     e3.add_argument("--system-binary", type=Path)
@@ -140,6 +141,7 @@ def main() -> None:
                 weights=tuple(args.weights),
                 warmups=args.warmups,
                 repetitions=args.repetitions,
+                request_timeout_seconds=args.request_timeout_seconds,
                 query_limit=args.query_limit,
                 allow_dirty=args.allow_dirty,
             )
