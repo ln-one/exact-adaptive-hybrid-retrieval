@@ -155,6 +155,7 @@ def load_dataset_snapshot(artifact_root: Path, dataset: str) -> DatasetSnapshot:
 def load_collection_snapshot(
     artifact_root: Path,
     snapshot: DatasetSnapshot,
+    collection: str,
 ) -> CollectionSnapshot:
     base = artifact_root / "collections" / snapshot.dataset / "qdrant-v1.18.2"
     manifest_path = base / "manifest.json"
@@ -170,9 +171,10 @@ def load_collection_snapshot(
         raise RuntimeError("Collection snapshot inputs do not match canonical dataset manifests")
     if (
         manifest.get("dataset") != snapshot.dataset
+        or manifest.get("collection") != collection
         or manifest.get("points") != snapshot.document_count
     ):
-        raise RuntimeError("Collection snapshot dataset or point count mismatch")
+        raise RuntimeError("Collection snapshot dataset, collection, or point count mismatch")
     snapshot_spec = manifest.get("snapshot")
     if not isinstance(snapshot_spec, dict) or not isinstance(snapshot_spec.get("path"), str):
         raise RuntimeError("Collection snapshot manifest is missing snapshot.path")

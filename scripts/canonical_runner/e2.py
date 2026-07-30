@@ -192,7 +192,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
 
     snapshot = load_dataset_snapshot(config.artifact_root, config.dataset)
     collection_snapshot = (
-        load_collection_snapshot(config.artifact_root, snapshot)
+        load_collection_snapshot(config.artifact_root, snapshot, config.collection)
         if config.system_binary is not None
         else None
     )
