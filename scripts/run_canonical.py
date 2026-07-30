@@ -46,6 +46,7 @@ def parse_args() -> argparse.Namespace:
         "e2", help="paired proof-driven stopping versus same-producer exhaustion"
     )
     add_common_arguments(e2, system_commit=E2_SYSTEM_COMMIT)
+    e2.add_argument("--system-binary", type=Path)
     e2.add_argument("--warmups", type=int, default=2)
     e2.add_argument("--repetitions", type=int, default=5)
     return parser.parse_args()
@@ -96,6 +97,7 @@ def main() -> None:
                 system_commit=args.system_commit,
                 system_artifact=args.system_artifact,
                 hardware_profile=args.hardware_profile,
+                system_binary=args.system_binary,
                 dense_name=args.dense_name,
                 sparse_name=args.sparse_name,
                 limit=args.limit,

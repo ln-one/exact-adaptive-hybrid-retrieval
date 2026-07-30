@@ -87,7 +87,12 @@ def aggregate(paths: list[Path], *, seed: int, samples: int) -> dict[str, Any]:
                 record = json.loads(line)
                 if record.get("recordType") != "query":
                     continue
-                if record.get("warmup") or record.get("status") != "ok":
+                if record.get("status") != "ok":
+                    raise ValueError(
+                        "publication E2 aggregation refuses mismatch, timeout, cancellation, "
+                        f"or error records: {record.get('queryId')}={record.get('status')}"
+                    )
+                if record.get("warmup"):
                     continue
                 dynamic_ns = float(record["dynamic"]["latencyNs"])
                 exhaustive_ns = float(record["exhaustive"]["latencyNs"])

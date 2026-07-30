@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import uuid
 from pathlib import Path
@@ -39,6 +40,16 @@ def verify_manifest(base: Path) -> dict[str, object]:
         raise RuntimeError("only canonical normalized float32 Dense artifacts are accepted")
     if manifest["dimension"] != 384:
         raise RuntimeError(f"unexpected Dense dimension: {manifest['dimension']}")
+    for shard in manifest["shards"]:
+        path = base / shard["name"]
+        digest = hashlib.sha256()
+        if not path.is_file():
+            raise RuntimeError(f"Dense artifact is missing: {path}")
+        with path.open("rb") as handle:
+            while chunk := handle.read(8 * 1024 * 1024):
+                digest.update(chunk)
+        if digest.hexdigest() != shard["sha256"]:
+            raise RuntimeError(f"Dense artifact checksum mismatch: {path}")
     return manifest
 
 

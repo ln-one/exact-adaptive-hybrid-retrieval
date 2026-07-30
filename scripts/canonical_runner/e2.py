@@ -6,6 +6,7 @@ import math
 import time
 import uuid
 from collections.abc import Callable
+from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,7 +14,13 @@ from typing import Any
 
 import httpx
 
-from .artifacts import DatasetSnapshot, QueryInput, load_dataset_snapshot
+from .artifacts import (
+    CollectionSnapshot,
+    DatasetSnapshot,
+    QueryInput,
+    load_collection_snapshot,
+    load_dataset_snapshot,
+)
 from .client import ExactRrfResult, QueryClient
 from .logs import AtomicJsonlWriter
 from .provenance import (
@@ -24,6 +31,7 @@ from .provenance import (
     runtime_metadata,
 )
 from .runner import SCHEMA, _mismatch, _sha256_output
+from .server import ManagedQdrant, ManagedServerEvidence, sha256_file
 
 
 @dataclass(frozen=True)
@@ -38,6 +46,7 @@ class E2Config:
     system_commit: str
     system_artifact: str
     hardware_profile: str
+    system_binary: Path | None = None
     dense_name: str = "dense"
     sparse_name: str = "sparse"
     limit: int = 20
@@ -64,6 +73,10 @@ def _validate(config: E2Config) -> None:
         raise RuntimeError("query-limited E2 is a development dry run and requires --allow-dirty")
     if not config.system_artifact.strip():
         raise ValueError("system artifact digest must be non-empty")
+    if config.system_binary is None and not config.allow_dirty:
+        raise RuntimeError(
+            "publication E2 requires a managed --system-binary and canonical snapshot"
+        )
 
 
 def _run_record(
@@ -73,6 +86,8 @@ def _run_record(
     dirty: bool,
     server_info: dict[str, Any],
     collection_info: dict[str, Any],
+    server_evidence: ManagedServerEvidence | None,
+    collection_snapshot: CollectionSnapshot | None,
 ) -> dict[str, Any]:
     runtime = runtime_metadata(config.hardware_profile)
     return {
@@ -88,6 +103,16 @@ def _run_record(
         "sparseManifestSha256": snapshot.sparse_manifest_sha256,
         "systemCommit": config.system_commit,
         "systemArtifact": config.system_artifact,
+        "serverProvenance": (
+            {
+                "mode": "managed-isolated-snapshot",
+                "binarySha256": server_evidence.binary_sha256,
+                "snapshotSha256": server_evidence.snapshot_sha256,
+                "collectionSnapshotManifestSha256": collection_snapshot.manifest_sha256,
+            }
+            if server_evidence is not None and collection_snapshot is not None
+            else {"mode": "external-unbound-development"}
+        ),
         "benchCommit": git_revision(config.bench_repo),
         "dirty": dirty,
         "runnerSourceSha256": runner_source_sha256(config.bench_repo),
@@ -166,161 +191,198 @@ def run_e2(config: E2Config) -> dict[str, Any]:
         raise RuntimeError("canonical runner refuses a dirty bench or system repository")
 
     snapshot = load_dataset_snapshot(config.artifact_root, config.dataset)
+    collection_snapshot = (
+        load_collection_snapshot(config.artifact_root, snapshot)
+        if config.system_binary is not None
+        else None
+    )
+    if config.system_binary is not None:
+        binary_sha256 = sha256_file(config.system_binary)
+        if config.system_artifact != f"sha256:{binary_sha256}":
+            raise RuntimeError(
+                "system artifact does not match the managed Qdrant binary: "
+                f"{config.system_artifact} != sha256:{binary_sha256}"
+            )
     queries = snapshot.queries[: config.query_limit]
     run_id = f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:12]}"
     attempted = ok = mismatch_count = timeout_count = error_count = 0
     query_hashes: list[str] = []
 
-    with QueryClient(config.url, config.collection) as client:
-        server_info = client.server_info()
-        initial_collection = client.collection_info()
-        if initial_collection["pointsCount"] != snapshot.document_count:
-            raise RuntimeError(
-                "collection/source document count mismatch: "
-                f"{initial_collection['pointsCount']} != {snapshot.document_count}"
-            )
-        with AtomicJsonlWriter(config.output) as writer:
-            writer.write(
-                _run_record(
-                    config,
-                    snapshot,
-                    run_id,
-                    dirty,
-                    server_info,
-                    initial_collection,
+    server_context = (
+        ManagedQdrant(
+            binary=config.system_binary,
+            system_repo=config.system_repo,
+            collection=config.collection,
+            snapshot=collection_snapshot.path,
+        )
+        if config.system_binary is not None and collection_snapshot is not None
+        else nullcontext(None)
+    )
+    with server_context as server_evidence:
+        url = server_evidence.url if server_evidence is not None else config.url
+        with QueryClient(url, config.collection) as client:
+            server_info = client.server_info()
+            if server_evidence is not None and server_info.get("commit") != config.system_commit:
+                raise RuntimeError(
+                    "managed Qdrant runtime commit does not match the frozen system commit: "
+                    f"{server_info.get('commit')} != {config.system_commit}"
                 )
-            )
-            sequence = 0
-            observation_count = config.warmups + config.repetitions
-            for query_index, query in enumerate(queries):
-                for observation in range(observation_count):
-                    attempted += 1
-                    warmup = observation < config.warmups
-                    repetition = observation if warmup else observation - config.warmups + 1
-                    dynamic_first = (query_index + observation) % 2 == 0
-                    validation_started = time.perf_counter_ns()
-                    try:
-                        if dynamic_first:
-                            dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
-                            exhaustive, exhaustive_ns = _invoke(
-                                client.exhaustive_rrf, query, config
-                            )
-                        else:
-                            exhaustive, exhaustive_ns = _invoke(
-                                client.exhaustive_rrf, query, config
-                            )
-                            dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
-                        actual = list(dynamic.point_ids)
-                        oracle = list(exhaustive.point_ids)
-                        membership_mismatch, order_mismatch = _mismatch(oracle, actual)
-                        mismatch = membership_mismatch or order_mismatch
-                        status = "mismatch" if mismatch else "ok"
-                        if mismatch:
-                            mismatch_count += 1
-                        else:
-                            ok += 1
-                        dynamic_measurement = _measurement(dynamic, dynamic_ns)
-                        exhaustive_measurement = _measurement(exhaustive, exhaustive_ns)
-                        source_pull_ratios = [
-                            dynamic_pull / exhaustive_pull if exhaustive_pull else None
-                            for dynamic_pull, exhaustive_pull in zip(
-                                dynamic_measurement["sourcePulls"],
-                                exhaustive_measurement["sourcePulls"],
-                                strict=True,
-                            )
-                        ]
-                        record: dict[str, Any] = {
-                            "recordType": "query",
-                            "runId": run_id,
-                            "queryId": query.query_id,
-                            "sequence": sequence,
-                            "repetition": repetition,
-                            "warmup": warmup,
-                            "counterbalanceOrder": (
-                                ["ed-wrrf", "exhaustive"]
-                                if dynamic_first
-                                else ["exhaustive", "ed-wrrf"]
-                            ),
-                            "status": status,
-                            "latencyNs": dynamic_ns,
-                            "baselineLatencyNs": exhaustive_ns,
-                            "validationLatencyNs": time.perf_counter_ns() - validation_started,
-                            "orderedIds": actual,
-                            "oracleOrderedIds": oracle,
-                            "orderedResultSha256": canonical_hash(actual),
-                            "oracleOrderedResultSha256": canonical_hash(oracle),
-                            "membershipMismatch": membership_mismatch,
-                            "orderMismatch": order_mismatch,
-                            "tieMismatch": None,
-                            "sourcePulls": dynamic_measurement["sourcePulls"],
-                            "sourceExhausted": dynamic_measurement["sourceExhausted"],
-                            "certificationChecks": dynamic_measurement["certificationChecks"],
-                            "sourcePointsMaterialized": dynamic_measurement[
-                                "sourcePointsMaterialized"
-                            ],
-                            "corpusPointsObserved": dynamic_measurement["corpusPointsObserved"],
-                            "exhaustiveFallback": dynamic_measurement["exhaustiveFallback"],
-                            "sourcePullRatios": source_pull_ratios,
-                            "dynamic": dynamic_measurement,
-                            "exhaustive": exhaustive_measurement,
-                        }
-                    except httpx.TimeoutException as error:
-                        timeout_count += 1
-                        record = {
-                            "recordType": "query",
-                            "runId": run_id,
-                            "queryId": query.query_id,
-                            "sequence": sequence,
-                            "repetition": repetition,
-                            "warmup": warmup,
-                            "status": "timeout",
-                            "latencyNs": None,
-                            "validationLatencyNs": time.perf_counter_ns() - validation_started,
-                            "errorType": type(error).__name__,
-                            "error": str(error),
-                        }
-                    except (httpx.HTTPError, RuntimeError, ValueError) as error:
-                        error_count += 1
-                        record = {
-                            "recordType": "query",
-                            "runId": run_id,
-                            "queryId": query.query_id,
-                            "sequence": sequence,
-                            "repetition": repetition,
-                            "warmup": warmup,
-                            "status": "error",
-                            "latencyNs": None,
-                            "validationLatencyNs": time.perf_counter_ns() - validation_started,
-                            "errorType": type(error).__name__,
-                            "error": str(error),
-                        }
-                    writer.write(record)
-                    query_hashes.append(canonical_hash(record))
-                    sequence += 1
-
-            final_collection = client.collection_info()
-            if final_collection["pointsCount"] != initial_collection[
-                "pointsCount"
-            ] or canonical_hash(final_collection["config"]) != canonical_hash(
-                initial_collection["config"]
+            initial_collection = client.collection_info()
+            if initial_collection["pointsCount"] != snapshot.document_count:
+                raise RuntimeError(
+                    "collection/source document count mismatch: "
+                    f"{initial_collection['pointsCount']} != {snapshot.document_count}"
+                )
+            if (
+                collection_snapshot is not None
+                and canonical_hash(initial_collection["config"])
+                != collection_snapshot.collection_config_sha256
             ):
-                raise RuntimeError("collection point count or configuration changed during E2")
-            summary = {
-                "recordType": "summary",
-                "runId": run_id,
-                "attemptedQueries": attempted,
-                "uniqueQueries": len(queries),
-                "warmupObservations": len(queries) * config.warmups,
-                "measuredObservations": len(queries) * config.repetitions,
-                "okQueries": ok,
-                "mismatchQueries": mismatch_count,
-                "timeoutQueries": timeout_count,
-                "errorQueries": error_count,
-                "finishedAtUtc": datetime.now(UTC).isoformat(),
-                "queryRecordSha256": canonical_hash(query_hashes),
-            }
-            writer.write(summary)
-            writer.commit()
+                raise RuntimeError("restored Collection config differs from its frozen attestation")
+            with AtomicJsonlWriter(config.output) as writer:
+                writer.write(
+                    _run_record(
+                        config,
+                        snapshot,
+                        run_id,
+                        dirty,
+                        server_info,
+                        initial_collection,
+                        server_evidence,
+                        collection_snapshot,
+                    )
+                )
+                sequence = 0
+                observation_count = config.warmups + config.repetitions
+                for query_index, query in enumerate(queries):
+                    for observation in range(observation_count):
+                        attempted += 1
+                        warmup = observation < config.warmups
+                        repetition = observation if warmup else observation - config.warmups + 1
+                        dynamic_first = (query_index + observation) % 2 == 0
+                        validation_started = time.perf_counter_ns()
+                        try:
+                            if dynamic_first:
+                                dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
+                                exhaustive, exhaustive_ns = _invoke(
+                                    client.exhaustive_rrf, query, config
+                                )
+                            else:
+                                exhaustive, exhaustive_ns = _invoke(
+                                    client.exhaustive_rrf, query, config
+                                )
+                                dynamic, dynamic_ns = _invoke(client.exact_rrf, query, config)
+                            actual = list(dynamic.point_ids)
+                            oracle = list(exhaustive.point_ids)
+                            membership_mismatch, order_mismatch = _mismatch(oracle, actual)
+                            mismatch = membership_mismatch or order_mismatch
+                            status = "mismatch" if mismatch else "ok"
+                            if mismatch:
+                                mismatch_count += 1
+                            else:
+                                ok += 1
+                            dynamic_measurement = _measurement(dynamic, dynamic_ns)
+                            exhaustive_measurement = _measurement(exhaustive, exhaustive_ns)
+                            source_pull_ratios = [
+                                dynamic_pull / exhaustive_pull if exhaustive_pull else None
+                                for dynamic_pull, exhaustive_pull in zip(
+                                    dynamic_measurement["sourcePulls"],
+                                    exhaustive_measurement["sourcePulls"],
+                                    strict=True,
+                                )
+                            ]
+                            record: dict[str, Any] = {
+                                "recordType": "query",
+                                "runId": run_id,
+                                "queryId": query.query_id,
+                                "sequence": sequence,
+                                "repetition": repetition,
+                                "warmup": warmup,
+                                "counterbalanceOrder": (
+                                    ["ed-wrrf", "exhaustive"]
+                                    if dynamic_first
+                                    else ["exhaustive", "ed-wrrf"]
+                                ),
+                                "status": status,
+                                "latencyNs": dynamic_ns,
+                                "baselineLatencyNs": exhaustive_ns,
+                                "validationLatencyNs": time.perf_counter_ns() - validation_started,
+                                "orderedIds": actual,
+                                "oracleOrderedIds": oracle,
+                                "orderedResultSha256": canonical_hash(actual),
+                                "oracleOrderedResultSha256": canonical_hash(oracle),
+                                "membershipMismatch": membership_mismatch,
+                                "orderMismatch": order_mismatch,
+                                "tieMismatch": None,
+                                "sourcePulls": dynamic_measurement["sourcePulls"],
+                                "sourceExhausted": dynamic_measurement["sourceExhausted"],
+                                "certificationChecks": dynamic_measurement["certificationChecks"],
+                                "sourcePointsMaterialized": dynamic_measurement[
+                                    "sourcePointsMaterialized"
+                                ],
+                                "corpusPointsObserved": dynamic_measurement["corpusPointsObserved"],
+                                "exhaustiveFallback": dynamic_measurement["exhaustiveFallback"],
+                                "sourcePullRatios": source_pull_ratios,
+                                "dynamic": dynamic_measurement,
+                                "exhaustive": exhaustive_measurement,
+                            }
+                        except httpx.TimeoutException as error:
+                            timeout_count += 1
+                            record = {
+                                "recordType": "query",
+                                "runId": run_id,
+                                "queryId": query.query_id,
+                                "sequence": sequence,
+                                "repetition": repetition,
+                                "warmup": warmup,
+                                "status": "timeout",
+                                "latencyNs": None,
+                                "validationLatencyNs": time.perf_counter_ns() - validation_started,
+                                "errorType": type(error).__name__,
+                                "error": str(error),
+                            }
+                        except (httpx.HTTPError, RuntimeError, ValueError) as error:
+                            error_count += 1
+                            record = {
+                                "recordType": "query",
+                                "runId": run_id,
+                                "queryId": query.query_id,
+                                "sequence": sequence,
+                                "repetition": repetition,
+                                "warmup": warmup,
+                                "status": "error",
+                                "latencyNs": None,
+                                "validationLatencyNs": time.perf_counter_ns() - validation_started,
+                                "errorType": type(error).__name__,
+                                "error": str(error),
+                            }
+                        writer.write(record)
+                        query_hashes.append(canonical_hash(record))
+                        sequence += 1
+
+                final_collection = client.collection_info()
+                if final_collection["pointsCount"] != initial_collection[
+                    "pointsCount"
+                ] or canonical_hash(final_collection["config"]) != canonical_hash(
+                    initial_collection["config"]
+                ):
+                    raise RuntimeError("collection point count or configuration changed during E2")
+                summary = {
+                    "recordType": "summary",
+                    "runId": run_id,
+                    "attemptedQueries": attempted,
+                    "uniqueQueries": len(queries),
+                    "warmupObservations": len(queries) * config.warmups,
+                    "measuredObservations": len(queries) * config.repetitions,
+                    "okQueries": ok,
+                    "mismatchQueries": mismatch_count,
+                    "timeoutQueries": timeout_count,
+                    "errorQueries": error_count,
+                    "finishedAtUtc": datetime.now(UTC).isoformat(),
+                    "queryRecordSha256": canonical_hash(query_hashes),
+                }
+                writer.write(summary)
+                writer.commit()
 
     _sha256_output(config.output)
     return summary

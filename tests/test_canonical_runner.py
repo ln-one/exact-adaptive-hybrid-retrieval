@@ -19,6 +19,7 @@ from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
 from canonical_runner.provenance import canonical_hash
 from canonical_runner.runner import E1Config, run_e1
+from canonical_runner.server import sha256_file
 from canonical_runner.validation import validate_log
 from create_qdrant_collection import collection_schema
 
@@ -86,6 +87,30 @@ class RunnerConfigTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "repetitions"):
             run_e2(config)
+
+    def test_e2_rejects_unbound_external_server_for_publication(self) -> None:
+        config = E2Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            url="http://unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+        )
+        with self.assertRaisesRegex(RuntimeError, "managed --system-binary"):
+            run_e2(config)
+
+
+class ManagedServerTests(unittest.TestCase):
+    def test_sha256_file_streams_the_exact_binary_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "binary"
+            path.write_bytes(b"canonical-qdrant")
+            self.assertEqual(sha256_file(path), hashlib.sha256(path.read_bytes()).hexdigest())
 
 
 class AtomicLogTests(unittest.TestCase):

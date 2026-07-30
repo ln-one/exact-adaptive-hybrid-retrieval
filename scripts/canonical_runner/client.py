@@ -49,7 +49,11 @@ class QueryClient:
         payload = response.json()
         if not isinstance(payload, dict):
             raise RuntimeError("Qdrant root response is not an object")
-        return {"title": payload.get("title"), "version": payload.get("version")}
+        return {
+            "title": payload.get("title"),
+            "version": payload.get("version"),
+            "commit": payload.get("commit"),
+        }
 
     def collection_info(self) -> dict[str, Any]:
         response = self._client.get(f"/collections/{self.collection}")

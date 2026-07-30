@@ -43,6 +43,23 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         raise ValueError("publication log was produced from a dirty repository")
     if require_clean and run.get("parameters", {}).get("queryLimit") is not None:
         raise ValueError("query-limited development log is not publication evidence")
+    if require_clean and run.get("experiment") == "E2":
+        provenance = run.get("serverProvenance")
+        if not isinstance(provenance, dict) or provenance.get("mode") != (
+            "managed-isolated-snapshot"
+        ):
+            raise ValueError("publication E2 requires a managed binary and isolated snapshot")
+        binary_sha256 = provenance.get("binarySha256")
+        if run.get("systemArtifact") != f"sha256:{binary_sha256}":
+            raise ValueError("E2 system artifact is not bound to the managed binary")
+        for field in (
+            "binarySha256",
+            "snapshotSha256",
+            "collectionSnapshotManifestSha256",
+        ):
+            value = provenance.get(field)
+            if not isinstance(value, str) or len(value) != 64:
+                raise ValueError(f"E2 managed provenance is missing a SHA-256 field: {field}")
     if any(record.get("runId") != run_id for record in records):
         raise ValueError("record runId mismatch")
 

@@ -48,6 +48,16 @@ class DatasetSnapshot:
     sparse_manifest_sha256: str
 
 
+@dataclass(frozen=True)
+class CollectionSnapshot:
+    path: Path
+    manifest_path: Path
+    manifest_sha256: str
+    snapshot_sha256: str
+    collection_config_sha256: str
+    points: int
+
+
 def _read_manifest_rows(base: Path, manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
     for shard in manifest["shards"]:
@@ -139,4 +149,45 @@ def load_dataset_snapshot(artifact_root: Path, dataset: str) -> DatasetSnapshot:
         source_manifest_sha256=sha256_file(source_path),
         dense_manifest_sha256=sha256_file(dense_path),
         sparse_manifest_sha256=sha256_file(sparse_path),
+    )
+
+
+def load_collection_snapshot(
+    artifact_root: Path,
+    snapshot: DatasetSnapshot,
+) -> CollectionSnapshot:
+    base = artifact_root / "collections" / snapshot.dataset / "qdrant-v1.18.2"
+    manifest_path = base / "manifest.json"
+    manifest = read_json(manifest_path)
+    if manifest.get("schema") != "canonical-qdrant-collection-snapshot-v1":
+        raise RuntimeError(f"unsupported canonical Collection snapshot: {manifest_path}")
+    expected_inputs = {
+        "sourceManifestSha256": snapshot.source_manifest_sha256,
+        "denseManifestSha256": snapshot.dense_manifest_sha256,
+        "sparseManifestSha256": snapshot.sparse_manifest_sha256,
+    }
+    if manifest.get("inputs") != expected_inputs:
+        raise RuntimeError("Collection snapshot inputs do not match canonical dataset manifests")
+    if (
+        manifest.get("dataset") != snapshot.dataset
+        or manifest.get("points") != snapshot.document_count
+    ):
+        raise RuntimeError("Collection snapshot dataset or point count mismatch")
+    snapshot_spec = manifest.get("snapshot")
+    if not isinstance(snapshot_spec, dict) or not isinstance(snapshot_spec.get("path"), str):
+        raise RuntimeError("Collection snapshot manifest is missing snapshot.path")
+    path = base / snapshot_spec["path"]
+    expected_sha256 = snapshot_spec.get("sha256")
+    if not path.is_file() or sha256_file(path) != expected_sha256:
+        raise RuntimeError(f"Collection snapshot checksum mismatch: {path}")
+    config_sha256 = manifest.get("collectionConfigSha256")
+    if not isinstance(config_sha256, str) or not config_sha256:
+        raise RuntimeError("Collection snapshot manifest is missing collectionConfigSha256")
+    return CollectionSnapshot(
+        path=path,
+        manifest_path=manifest_path,
+        manifest_sha256=sha256_file(manifest_path),
+        snapshot_sha256=expected_sha256,
+        collection_config_sha256=config_sha256,
+        points=snapshot.document_count,
     )
