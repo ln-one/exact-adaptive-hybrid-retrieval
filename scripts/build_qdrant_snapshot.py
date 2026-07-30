@@ -70,6 +70,19 @@ def _collection_info(client: httpx.Client, collection: str) -> dict[str, object]
     return result
 
 
+def _expected_indexed_vectors(
+    dense_receipt: dict[str, object],
+    sparse_receipt: dict[str, object],
+) -> int:
+    """Count named vector instances, not logical points.
+
+    Every canonical point has a Dense vector. Sparse vectors with empty support
+    are intentionally absent, so Qdrant's indexed_vectors_count is the sum of
+    the two loader point counts.
+    """
+    return int(dense_receipt["points"]) + int(sparse_receipt["points"])
+
+
 def main() -> None:
     args = parse_args()
     bench_repo = Path(__file__).resolve().parents[1]
@@ -112,6 +125,10 @@ def main() -> None:
                 != snapshot.document_count
             ):
                 raise RuntimeError("Sparse loader receipt does not cover the canonical corpus")
+            expected_indexed_vectors = _expected_indexed_vectors(
+                dense_receipt,
+                sparse_receipt,
+            )
 
             deadline = time.monotonic() + args.optimizer_timeout
             stable_since: float | None = None
@@ -120,7 +137,7 @@ def main() -> None:
                 ready = (
                     info.get("status") == "green"
                     and info.get("points_count") == snapshot.document_count
-                    and info.get("indexed_vectors_count") == snapshot.document_count
+                    and info.get("indexed_vectors_count") == expected_indexed_vectors
                 )
                 if ready:
                     stable_since = stable_since or time.monotonic()
@@ -157,6 +174,7 @@ def main() -> None:
                 "dataset": args.dataset,
                 "collection": args.collection,
                 "points": snapshot.document_count,
+                "indexedVectors": expected_indexed_vectors,
                 "inputs": {
                     "sourceManifestSha256": snapshot.source_manifest_sha256,
                     "denseManifestSha256": snapshot.dense_manifest_sha256,

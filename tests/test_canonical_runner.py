@@ -21,6 +21,7 @@ from canonical_runner.provenance import canonical_hash
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.server import sha256_file
 from canonical_runner.validation import validate_log
+from build_qdrant_snapshot import _expected_indexed_vectors
 from create_qdrant_collection import collection_schema
 from load_qdrant_sparse import valid_sparse_vector
 
@@ -55,6 +56,15 @@ class CollectionSchemaTests(unittest.TestCase):
 
     def test_empty_sparse_document_is_a_valid_zero_support_vector(self) -> None:
         self.assertTrue(valid_sparse_vector([], []))
+
+    def test_indexed_vector_count_includes_each_present_named_vector(self) -> None:
+        self.assertEqual(
+            _expected_indexed_vectors(
+                {"points": 3},
+                {"points": 2, "empty": 1},
+            ),
+            5,
+        )
 
 
 class RunnerConfigTests(unittest.TestCase):
