@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 from collections import defaultdict
@@ -142,6 +143,10 @@ def main() -> None:
     with args.output.open("x", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2, sort_keys=True)
         handle.write("\n")
+    digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
+    checksum_path = args.output.with_suffix(args.output.suffix + ".sha256")
+    with checksum_path.open("x", encoding="utf-8") as handle:
+        handle.write(f"{digest}  {args.output.name}\n")
     print(json.dumps(result, sort_keys=True))
 
 
