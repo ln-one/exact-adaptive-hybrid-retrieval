@@ -61,6 +61,7 @@ def main() -> None:
     command = [str(args.cargo), *recorded_command[1:]]
     environment = os.environ.copy()
     environment["RUSTFLAGS"] = args.rustflags
+    environment["GIT_COMMIT_ID"] = git_revision(repo)
     subprocess.run(command, cwd=repo, env=environment, check=True)
 
     binary = repo / "target" / "release" / args.binary_name
