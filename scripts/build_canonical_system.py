@@ -23,6 +23,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--features", default="canonical-bench")
     parser.add_argument("--binary-name", default="qdrant")
     parser.add_argument("--rustflags", default="")
+    parser.add_argument("--cargo", type=Path, default=Path.home() / ".cargo/bin/cargo")
+    parser.add_argument("--rustc", type=Path, default=Path.home() / ".cargo/bin/rustc")
     return parser.parse_args()
 
 
@@ -44,7 +46,7 @@ def main() -> None:
     if args.output.exists():
         raise FileExistsError(f"build manifest already exists: {args.output}")
 
-    command = [
+    recorded_command = [
         "cargo",
         f"+{args.toolchain}",
         "build",
@@ -53,7 +55,8 @@ def main() -> None:
         args.binary_name,
     ]
     if args.features:
-        command.extend(["--features", args.features])
+        recorded_command.extend(["--features", args.features])
+    command = [str(args.cargo.resolve(strict=True)), *recorded_command[1:]]
     environment = os.environ.copy()
     environment["RUSTFLAGS"] = args.rustflags
     subprocess.run(command, cwd=repo, env=environment, check=True)
@@ -69,12 +72,16 @@ def main() -> None:
             "sha256": sha256_file(binary),
         },
         "build": {
-            "command": command,
+            "command": recorded_command,
             "toolchain": args.toolchain,
             "features": args.features.split(",") if args.features else [],
             "rustflags": args.rustflags,
-            "rustc": _version(["rustc", f"+{args.toolchain}", "-Vv"], repo),
-            "cargo": _version(["cargo", f"+{args.toolchain}", "-V"], repo),
+            "rustc": _version(
+                [str(args.rustc.resolve(strict=True)), f"+{args.toolchain}", "-Vv"], repo
+            ),
+            "cargo": _version(
+                [str(args.cargo.resolve(strict=True)), f"+{args.toolchain}", "-V"], repo
+            ),
             "target": platform.machine(),
             "profile": "release",
         },
