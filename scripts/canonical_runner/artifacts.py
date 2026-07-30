@@ -12,6 +12,7 @@ import pyarrow.parquet as pq
 
 DENSE_PROFILE = "bge-small-en-v1.5-f32"
 SPARSE_PROFILE = "bm25-impact-v1"
+CANONICAL_COLLECTION_FORMAT = "qdrant-v1.18.2-exact-v2"
 
 
 def sha256_file(path: Path) -> str:
@@ -157,7 +158,7 @@ def load_collection_snapshot(
     snapshot: DatasetSnapshot,
     collection: str,
 ) -> CollectionSnapshot:
-    base = artifact_root / "collections" / snapshot.dataset / "qdrant-v1.18.2"
+    base = artifact_root / "collections" / snapshot.dataset / CANONICAL_COLLECTION_FORMAT
     manifest_path = base / "manifest.json"
     manifest = read_json(manifest_path)
     if manifest.get("schema") != "canonical-qdrant-collection-snapshot-v1":

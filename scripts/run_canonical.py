@@ -16,7 +16,7 @@ from canonical_runner.synthetic import REGIMES
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
 E2_SYSTEM_COMMIT = "ddeaed679322c825b23e9107e65e5ddbaafe4d9c"
-E5_SYSTEM_COMMIT = "069f7644baf65185ecda12c219545c214552ac01"
+E5_SYSTEM_COMMIT = "d4a1a59b19d8c3c869fe691e59c6349b5db987c1"
 
 
 def add_common_arguments(

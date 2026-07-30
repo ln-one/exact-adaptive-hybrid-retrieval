@@ -57,6 +57,16 @@ class CollectionSchemaTests(unittest.TestCase):
             exact_rank_profile="dense_sparse_v1",
         )
         self.assertEqual(schema["exact_rank_config"], {"profile": "dense_sparse_v1"})
+        self.assertEqual(
+            schema["quantization_config"],
+            {
+                "scalar": {
+                    "type": "int8",
+                    "quantile": 0.99,
+                    "always_ram": True,
+                }
+            },
+        )
         self.assertEqual(schema["shard_number"], 2)
 
     def test_empty_sparse_document_is_a_valid_zero_support_vector(self) -> None:

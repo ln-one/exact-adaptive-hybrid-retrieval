@@ -327,7 +327,10 @@ class QueryClient:
                 "limit": limit,
             },
         )
-        response.raise_for_status()
+        if not response.is_success:
+            raise RuntimeError(
+                f"Stratumind exact request failed ({response.status_code}): {response.text}"
+            )
         payload = response.json().get("result")
         if not isinstance(payload, dict):
             raise RuntimeError("Stratumind response is missing result")

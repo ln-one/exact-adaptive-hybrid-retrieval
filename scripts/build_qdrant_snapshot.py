@@ -13,7 +13,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
-from canonical_runner.artifacts import load_dataset_snapshot, sha256_file
+from canonical_runner.artifacts import (
+    CANONICAL_COLLECTION_FORMAT,
+    QueryInput,
+    load_dataset_snapshot,
+    sha256_file,
+)
 from canonical_runner.provenance import canonical_hash, git_is_dirty, git_revision
 from canonical_runner.server import ManagedQdrant
 from create_qdrant_collection import collection_schema
@@ -83,13 +88,78 @@ def _expected_indexed_vectors(
     return int(dense_receipt["points"]) + int(sparse_receipt["points"])
 
 
+def _producer_probe(
+    client: httpx.Client,
+    collection: str,
+    query: QueryInput,
+    producer: str,
+) -> tuple[bool, str]:
+    response = client.post(
+        f"/internal/collections/{collection}/points/query/exact-rrf-producer",
+        params={"producer": producer},
+        json={
+            "exact_rrf": {
+                "dense": {"query": query.dense, "using": "dense"},
+                "sparse": {
+                    "query": {
+                        "indices": query.sparse_indices,
+                        "values": query.sparse_values,
+                    },
+                    "using": "sparse",
+                },
+                "k": 60,
+                "weights": [1.0, 1.0],
+            },
+            "limit": 20,
+        },
+    )
+    if not response.is_success:
+        return False, response.text
+    execution = response.json().get("result", {}).get("execution", {})
+    telemetry = execution.get("producer", {})
+    dense_field = {
+        "pvs-pbm": "densePvsSegments",
+        "scalar-pbm": "denseScalarSegments",
+    }[producer]
+    ready = (
+        execution.get("exhaustiveFallback") is False
+        and isinstance(telemetry.get(dense_field), int)
+        and telemetry[dense_field] > 0
+        and isinstance(telemetry.get("sparsePbmSegments"), int)
+        and telemetry["sparsePbmSegments"] > 0
+    )
+    return ready, json.dumps(execution, sort_keys=True)
+
+
+def _wait_for_exact_producers(
+    client: httpx.Client,
+    collection: str,
+    query: QueryInput,
+    deadline: float,
+) -> None:
+    last_evidence = ""
+    while time.monotonic() < deadline:
+        ready = True
+        for producer in ("pvs-pbm", "scalar-pbm"):
+            producer_ready, evidence = _producer_probe(client, collection, query, producer)
+            ready &= producer_ready
+            last_evidence = f"{producer}: {evidence}"
+        if ready:
+            return
+        time.sleep(0.5)
+    raise TimeoutError(
+        "canonical Collection never exposed required PVS/Scalar/PBM producers; "
+        f"last evidence: {last_evidence}"
+    )
+
+
 def main() -> None:
     args = parse_args()
     bench_repo = Path(__file__).resolve().parents[1]
     if git_is_dirty(bench_repo) or git_is_dirty(args.system_repo):
         raise RuntimeError("canonical Collection snapshot builder refuses dirty repositories")
     snapshot = load_dataset_snapshot(args.artifact_root, args.dataset)
-    output = args.artifact_root / "collections" / args.dataset / "qdrant-v1.18.2"
+    output = args.artifact_root / "collections" / args.dataset / CANONICAL_COLLECTION_FORMAT
     if output.exists():
         raise FileExistsError(f"canonical Collection snapshot already exists: {output}")
     temporary = output.with_name(output.name + ".tmp")
@@ -149,6 +219,12 @@ def main() -> None:
             else:
                 raise TimeoutError("canonical Collection did not reach a stable indexed state")
 
+            _wait_for_exact_producers(
+                client,
+                args.collection,
+                snapshot.queries[0],
+                time.monotonic() + args.optimizer_timeout,
+            )
             info = _collection_info(client, args.collection)
             response = client.post(
                 f"/collections/{args.collection}/snapshots",

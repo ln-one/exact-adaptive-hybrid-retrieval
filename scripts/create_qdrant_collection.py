@@ -20,12 +20,23 @@ def collection_schema(
         raise ValueError("shards must be positive")
     if exact_rank_profile not in {"disabled", "dense_sparse_v1"}:
         raise ValueError(f"unsupported exact-rank profile: {exact_rank_profile}")
-    return {
+    schema: dict[str, object] = {
         "vectors": {dense_vector_name: {"size": 384, "distance": "Cosine"}},
         "sparse_vectors": {sparse_vector_name: {"index": {"on_disk": False}}},
         "shard_number": shards,
         "exact_rank_config": {"profile": exact_rank_profile},
     }
+    if exact_rank_profile == "dense_sparse_v1":
+        # Qdrant's Scalar index is the shared persisted container used by both
+        # the stock Scalar certificate and Stratumind's PVS sidecar.
+        schema["quantization_config"] = {
+            "scalar": {
+                "type": "int8",
+                "quantile": 0.99,
+                "always_ram": True,
+            }
+        }
+    return schema
 
 
 def parse_args() -> argparse.Namespace:
