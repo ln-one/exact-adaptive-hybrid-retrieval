@@ -231,7 +231,13 @@ def run_e5(config: E5Config) -> dict[str, Any]:
                 collection=config.collection,
                 snapshot=collection_snapshot.path,
             ) as server:
-                _validate_server(server, config, snapshot, collection_snapshot)
+                initial_collection = _validate_server(
+                    server,
+                    config,
+                    snapshot,
+                    collection_snapshot,
+                    binary_sha256,
+                )
                 with QueryClient(server.url, config.collection) as client:
                     for query_index, query in enumerate(queries):
                         for observation in range(observation_count):
@@ -324,6 +330,15 @@ def run_e5(config: E5Config) -> dict[str, Any]:
                             writer.write(record)
                             query_hashes.append(canonical_hash(record))
                             sequence += 1
+                    final_collection = client.collection_info()
+                    if final_collection["pointsCount"] != initial_collection[
+                        "pointsCount"
+                    ] or canonical_hash(final_collection["config"]) != canonical_hash(
+                        initial_collection["config"]
+                    ):
+                        raise RuntimeError(
+                            "Collection point count or configuration changed during E5"
+                        )
 
         summary = {
             "recordType": "summary",
@@ -351,7 +366,12 @@ def _validate_server(
     config: E5Config,
     snapshot: DatasetSnapshot,
     collection_snapshot: CollectionSnapshot,
-) -> None:
+    binary_sha256: str,
+) -> dict[str, Any]:
+    if server.binary_sha256 != binary_sha256:
+        raise RuntimeError("managed E5 process binary differs from the attested artifact")
+    if server.snapshot_sha256 != collection_snapshot.snapshot_sha256:
+        raise RuntimeError("managed E5 process snapshot differs from the frozen artifact")
     with QueryClient(server.url, config.collection) as client:
         server_info = client.server_info()
         if server_info.get("commit") != config.system_commit:
@@ -361,6 +381,7 @@ def _validate_server(
             raise RuntimeError("E5 collection/source document count mismatch")
         if canonical_hash(collection["config"]) != collection_snapshot.collection_config_sha256:
             raise RuntimeError("restored E5 Collection config differs from frozen attestation")
+        return collection
 
 
 def _error_record(
