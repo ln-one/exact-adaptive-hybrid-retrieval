@@ -110,6 +110,32 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         expected_observations = summary.get("uniqueQueries", 0) * len(depths)
         if len(queries) != expected_observations:
             raise ValueError("E3 log does not contain a complete query/depth matrix")
+    elif run.get("experiment") == "E4":
+        parameters = run.get("parameters", {})
+        sizes = parameters.get("sizes")
+        seeds = parameters.get("seeds")
+        regimes = parameters.get("regimes")
+        if (
+            not isinstance(sizes, list)
+            or not isinstance(seeds, list)
+            or not isinstance(regimes, list)
+            or not sizes
+            or not seeds
+            or not regimes
+        ):
+            raise ValueError("E4 run is missing its size/seed/regime matrix")
+        expected_cases = {
+            (size, regime, seed) for size in sizes for regime in regimes for seed in seeds
+        }
+        actual_cases = {
+            (record.get("size"), record.get("regime"), record.get("seed")) for record in queries
+        }
+        if (
+            actual_cases != expected_cases
+            or len(queries) != len(expected_cases)
+            or len(query_ids) != len(set(query_ids))
+        ):
+            raise ValueError("E4 log does not contain the declared case matrix")
     elif len(query_ids) != len(set(query_ids)):
         raise ValueError("duplicate queryId in canonical log")
 

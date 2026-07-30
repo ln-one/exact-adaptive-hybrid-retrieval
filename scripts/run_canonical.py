@@ -9,7 +9,9 @@ from pathlib import Path
 
 from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.e3 import DEFAULT_DEPTHS, E3Config, run_e3
+from canonical_runner.e4 import DEFAULT_SEEDS, DEFAULT_SIZES, E4Config, run_e4
 from canonical_runner.runner import E1Config, run_e1
+from canonical_runner.synthetic import REGIMES
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
 E2_SYSTEM_COMMIT = "ddeaed679322c825b23e9107e65e5ddbaafe4d9c"
@@ -56,6 +58,22 @@ def parse_args() -> argparse.Namespace:
     e3.add_argument("--system-binary", type=Path)
     e3.add_argument("--system-build-manifest", type=Path)
     e3.add_argument("--depths", nargs="+", type=int, default=DEFAULT_DEPTHS)
+    e4 = subparsers.add_parser("e4", help="controlled synthetic rank-regime execution")
+    e4.add_argument("--output", type=Path, required=True)
+    e4.add_argument(
+        "--bench-repo",
+        type=Path,
+        default=Path(__file__).resolve().parents[1],
+    )
+    e4.add_argument("--hardware-profile", default="apple-m4-pro-24gb-v1")
+    e4.add_argument("--sizes", nargs="+", type=int, default=DEFAULT_SIZES)
+    e4.add_argument("--seeds", nargs="+", type=int, default=DEFAULT_SEEDS)
+    e4.add_argument("--regimes", nargs="+", choices=REGIMES, default=REGIMES)
+    e4.add_argument("--limit", type=int, default=20)
+    e4.add_argument("--rrf-k", type=int, default=60)
+    e4.add_argument("--weights", nargs=2, type=float, default=(1.0, 1.0))
+    e4.add_argument("--batch-size", type=int, default=16)
+    e4.add_argument("--allow-dirty", action="store_true")
     return parser.parse_args()
 
 
@@ -151,6 +169,29 @@ def main() -> None:
         )
         print(json.dumps(summary, sort_keys=True))
         if summary["timeoutQueries"] > 0 or summary["errorQueries"] > 0:
+            raise SystemExit(2)
+    elif args.experiment == "e4":
+        summary = run_e4(
+            E4Config(
+                output=args.output,
+                bench_repo=args.bench_repo,
+                hardware_profile=args.hardware_profile,
+                sizes=tuple(args.sizes),
+                seeds=tuple(args.seeds),
+                regimes=tuple(args.regimes),
+                limit=args.limit,
+                rrf_k=args.rrf_k,
+                weights=tuple(args.weights),
+                batch_size=args.batch_size,
+                allow_dirty=args.allow_dirty,
+            )
+        )
+        print(json.dumps(summary, sort_keys=True))
+        if (
+            summary["mismatchQueries"] > 0
+            or summary["timeoutQueries"] > 0
+            or summary["errorQueries"] > 0
+        ):
             raise SystemExit(2)
 
 

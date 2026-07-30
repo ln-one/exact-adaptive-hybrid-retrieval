@@ -18,11 +18,13 @@ from canonical_runner.artifacts import QueryInput
 from canonical_runner.client import QueryClient
 from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.e3 import E3Config, run_e3
+from canonical_runner.e4 import E4Config, run_e4
 from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
 from canonical_runner.provenance import canonical_hash
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.server import sha256_file
+from canonical_runner.synthetic import REGIMES, BalancedCertificate, generate_rankings
 from canonical_runner.validation import validate_log
 from create_qdrant_collection import collection_schema
 from load_qdrant_sparse import valid_sparse_vector
@@ -136,6 +138,17 @@ class RunnerConfigTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "unique and strictly increasing"):
             run_e3(config)
+
+    def test_e4_rejects_duplicate_seeds(self) -> None:
+        config = E4Config(
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            hardware_profile="test",
+            sizes=(100,),
+            seeds=(7, 7),
+        )
+        with self.assertRaisesRegex(ValueError, "seeds"):
+            run_e4(config)
 
 
 class ManagedServerTests(unittest.TestCase):
@@ -347,6 +360,42 @@ class ValidationTests(unittest.TestCase):
             result = aggregate_e3(path)
             self.assertEqual(result["frontier"][0]["orderedExact"]["estimate"], 0.0)
             self.assertEqual(result["frontier"][1]["orderedExact"]["estimate"], 1.0)
+
+
+class SyntheticTests(unittest.TestCase):
+    def test_regimes_are_permutations_and_have_declared_overlap(self) -> None:
+        for regime in REGIMES:
+            with self.subTest(regime=regime):
+                rankings = generate_rankings(size=2_000, seed=1_729, regime=regime)
+                self.assertEqual(len(set(rankings.first.tolist())), 2_000)
+                self.assertEqual(len(set(rankings.second.tolist())), 2_000)
+                if regime == "partial-overlap":
+                    self.assertEqual(rankings.top_window_overlap, 0.5)
+                if regime == "all-tied":
+                    self.assertEqual(rankings.top_window_overlap, 1.0)
+
+    def test_balanced_certificate_is_monotone_and_matches_exhaustive_order(self) -> None:
+        for regime in REGIMES:
+            with self.subTest(regime=regime):
+                rankings = generate_rankings(size=1_024, seed=2_027, regime=regime)
+                certificate = BalancedCertificate(
+                    rankings,
+                    k=60,
+                    weights=(1.0, 1.0),
+                    limit=20,
+                    batch_size=16,
+                )
+                first_certified: int | None = None
+                for depth in range(16, 1_025, 16):
+                    certified, output, _, _ = certificate._at_depth(depth)
+                    if certified:
+                        first_certified = first_certified or depth
+                        self.assertEqual(output, certificate.oracle)
+                    elif first_certified is not None:
+                        self.fail("certificate ceased to hold after a certified depth")
+                result = certificate.find_minimum_batch_depth()
+                self.assertEqual(result.depth, first_certified)
+                self.assertEqual(result.output, certificate.oracle)
 
 
 class ClientTests(unittest.TestCase):
