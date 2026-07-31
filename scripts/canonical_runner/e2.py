@@ -104,7 +104,7 @@ def _run_record(
         "schema": SCHEMA,
         "runId": run_id,
         "experiment": "E2",
-        "method": "paired-ed-wrrf-vs-same-producer-exhaustive",
+        "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
         "dataset": snapshot.dataset,
         "split": snapshot.split,
         "datasetManifestSha256": snapshot.source_manifest_sha256,
@@ -152,7 +152,7 @@ def _run_record(
             "requestTimeoutSeconds": config.request_timeout_seconds,
             "queryLimit": config.query_limit,
             "producer": "pvs-pbm",
-            "baseline": "parallel-native-bulk-exhaustive-channels",
+            "baseline": "native-bulk-exhaustive",
         },
         "startedAtUtc": datetime.now(UTC).isoformat(),
     }
@@ -281,7 +281,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                 exhaustive_operation = partial(
                     client.producer_rrf,
                     producer="pvs-pbm",
-                    exhaustive=True,
+                    mode="native-bulk-exhaustive",
                 )
                 sequence = 0
                 observation_count = config.warmups + config.repetitions

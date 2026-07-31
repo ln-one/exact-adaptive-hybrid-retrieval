@@ -25,6 +25,13 @@ E2_EXHAUSTIVE_PRODUCER_PLANS = {
     "pvs-sparse-materialized": "canonical-e2-bulk-native-exhaustive",
 }
 
+E2_SAME_PRODUCER_EXHAUSTIVE_PLANS = {
+    "pvs-pbm": "canonical-e2-pvs-pbm-exhaustive",
+    "scalar-pbm": "canonical-e2-scalar-pbm-exhaustive",
+    "scan-pbm": "canonical-e2-scan-pbm-exhaustive",
+    "pvs-sparse-materialized": "canonical-e2-pvs-sparse-materialized-exhaustive",
+}
+
 
 @dataclass(frozen=True)
 class ExactRrfResult:
@@ -241,24 +248,31 @@ class QueryClient:
         *,
         producer: str,
         exhaustive: bool = False,
+        mode: str | None = None,
         dense_name: str,
         sparse_name: str,
         k: int,
         weights: tuple[float, float],
         limit: int,
     ) -> ExactRrfResult:
+        # Resolve execution mode: explicit mode param takes precedence over legacy bool.
+        if mode is None:
+            mode = "native-bulk-exhaustive" if exhaustive else "proof-driven"
+        plan_maps = {
+            "proof-driven": E5_PRODUCER_PLANS,
+            "same-producer-exhaustive": E2_SAME_PRODUCER_EXHAUSTIVE_PLANS,
+            "native-bulk-exhaustive": E2_EXHAUSTIVE_PRODUCER_PLANS,
+        }
         try:
-            expected_plan = (
-                E2_EXHAUSTIVE_PRODUCER_PLANS if exhaustive else E5_PRODUCER_PLANS
-            )[producer]
+            expected_plan = plan_maps[mode][producer]
         except KeyError as error:
-            raise ValueError(f"unsupported exact producer: {producer}") from error
-        exhaustive_parameter = "&exhaustive=true" if exhaustive else ""
+            raise ValueError(f"unsupported mode/producer: {mode}/{producer}") from error
+        mode_parameter = f"&mode={mode}" if mode != "proof-driven" else ""
         result = self._exact_rrf(
             query,
             endpoint=(
                 f"/internal/collections/{self.collection}/points/query/"
-                f"exact-rrf-producer?producer={producer}{exhaustive_parameter}"
+                f"exact-rrf-producer?producer={producer}{mode_parameter}"
             ),
             expected_plan=expected_plan,
             dense_name=dense_name,
@@ -267,11 +281,13 @@ class QueryClient:
             weights=weights,
             limit=limit,
         )
-        if exhaustive:
+        if mode == "native-bulk-exhaustive":
             self._validate_bulk_exhaustive(result.execution)
+        elif mode == "same-producer-exhaustive":
+            self._validate_same_producer_exhaustive(result.execution, producer)
         else:
             self._validate_e5_producer(result.execution, producer)
-        if exhaustive and (
+        if mode != "proof-driven" and (
             result.execution.get("stopReason") != "all-sources-exhausted"
             or result.execution.get("sourceExhausted") != [True, True]
         ):
@@ -290,6 +306,35 @@ class QueryClient:
         if not isinstance(sparse_materialized, int) or sparse_materialized <= 0:
             raise RuntimeError(
                 f"bulk exhaustive did not use native Sparse materialization: {telemetry!r}"
+            )
+
+    @staticmethod
+    def _validate_same_producer_exhaustive(execution: dict[str, Any], producer: str) -> None:
+        telemetry = execution.get("producer")
+        if not isinstance(telemetry, dict):
+            raise RuntimeError("same-producer exhaustive execution is missing producer telemetry")
+        # The same-producer exhaustive arm must use the declared PVS/PBM producer,
+        # not native Dense scan or Sparse materialization.
+        expected_dense = (
+            "denseScalarSegments" if producer == "scalar-pbm"
+            else "denseScanSegments" if producer == "scan-pbm"
+            else "densePvsSegments"
+        )
+        expected_sparse = (
+            "sparseMaterializedSegments" if producer == "pvs-sparse-materialized"
+            else "sparsePbmSegments"
+        )
+        dense_count = telemetry.get(expected_dense)
+        if not isinstance(dense_count, int) or dense_count <= 0:
+            raise RuntimeError(
+                f"same-producer exhaustive did not use expected Dense producer "
+                f"{expected_dense}: {telemetry!r}"
+            )
+        sparse_count = telemetry.get(expected_sparse)
+        if not isinstance(sparse_count, int) or sparse_count <= 0:
+            raise RuntimeError(
+                f"same-producer exhaustive did not use expected Sparse producer "
+                f"{expected_sparse}: {telemetry!r}"
             )
 
     @staticmethod
@@ -330,6 +375,10 @@ class QueryClient:
         if execution.get("exhaustiveFallback") is not expected_fallback:
             raise RuntimeError(f"E5 fallback state does not match the selected producer {producer}")
 
+    _SLOT_RETRY_MAX = 15
+    _SLOT_RETRY_BASE_SECONDS = 1.0
+    _SLOT_RETRY_CAP_SECONDS = 10.0
+
     def _exact_rrf(
         self,
         query: QueryInput,
@@ -342,28 +391,45 @@ class QueryClient:
         weights: tuple[float, float],
         limit: int,
     ) -> ExactRrfResult:
-        response = self._client.post(
-            endpoint,
-            json={
-                "exact_rrf": {
-                    "dense": {"query": query.dense, "using": dense_name},
-                    "sparse": {
-                        "query": {
-                            "indices": query.sparse_indices,
-                            "values": query.sparse_values,
-                        },
-                        "using": sparse_name,
+        import time as _time
+
+        payload_body = {
+            "exact_rrf": {
+                "dense": {"query": query.dense, "using": dense_name},
+                "sparse": {
+                    "query": {
+                        "indices": query.sparse_indices,
+                        "values": query.sparse_values,
                     },
-                    "k": k,
-                    "weights": list(weights),
+                    "using": sparse_name,
                 },
-                "limit": limit,
+                "k": k,
+                "weights": list(weights),
             },
-        )
-        if not response.is_success:
+            "limit": limit,
+        }
+        last_response = None
+        for attempt in range(self._SLOT_RETRY_MAX):
+            response = self._client.post(endpoint, json=payload_body)
+            if response.is_success:
+                last_response = response
+                break
+            # Transient slot-reservation failure: retry with backoff.
+            if response.status_code == 500 and "cannot reserve" in response.text:
+                last_response = response
+                _time.sleep(min(self._SLOT_RETRY_BASE_SECONDS * (2 ** attempt), self._SLOT_RETRY_CAP_SECONDS))
+                continue
+            # Non-retryable error.
             raise RuntimeError(
                 f"Stratumind exact request failed ({response.status_code}): {response.text}"
             )
+        if last_response is None or not last_response.is_success:
+            raise RuntimeError(
+                f"Stratumind exact request failed after {self._SLOT_RETRY_MAX} retries "
+                f"({last_response.status_code if last_response else 'no response'}): "
+                f"{last_response.text if last_response else ''}"
+            )
+        response = last_response
         payload = response.json().get("result")
         if not isinstance(payload, dict):
             raise RuntimeError("Stratumind response is missing result")
