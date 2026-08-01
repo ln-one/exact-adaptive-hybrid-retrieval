@@ -61,6 +61,9 @@ class QueryClient:
             base_url=base_url.rstrip("/"),
             timeout=timeout_seconds,
             transport=transport,
+            # Canonical managed Qdrant runs must use the reserved local port
+            # directly; an ambient HTTP proxy would invalidate timings.
+            trust_env=False,
         )
 
     def close(self) -> None:
@@ -316,12 +319,15 @@ class QueryClient:
         # The same-producer exhaustive arm must use the declared PVS/PBM producer,
         # not native Dense scan or Sparse materialization.
         expected_dense = (
-            "denseScalarSegments" if producer == "scalar-pbm"
-            else "denseScanSegments" if producer == "scan-pbm"
+            "denseScalarSegments"
+            if producer == "scalar-pbm"
+            else "denseScanSegments"
+            if producer == "scan-pbm"
             else "densePvsSegments"
         )
         expected_sparse = (
-            "sparseMaterializedSegments" if producer == "pvs-sparse-materialized"
+            "sparseMaterializedSegments"
+            if producer == "pvs-sparse-materialized"
             else "sparsePbmSegments"
         )
         dense_count = telemetry.get(expected_dense)
@@ -417,7 +423,12 @@ class QueryClient:
             # Transient slot-reservation failure: retry with backoff.
             if response.status_code == 500 and "cannot reserve" in response.text:
                 last_response = response
-                _time.sleep(min(self._SLOT_RETRY_BASE_SECONDS * (2 ** attempt), self._SLOT_RETRY_CAP_SECONDS))
+                _time.sleep(
+                    min(
+                        self._SLOT_RETRY_BASE_SECONDS * (2**attempt),
+                        self._SLOT_RETRY_CAP_SECONDS,
+                    )
+                )
                 continue
             # Non-retryable error.
             raise RuntimeError(

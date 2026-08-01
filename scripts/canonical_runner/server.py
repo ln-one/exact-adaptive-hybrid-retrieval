@@ -110,7 +110,7 @@ class ManagedQdrant(AbstractContextManager[ManagedServerEvidence]):
                     f"managed Qdrant exited during startup ({return_code}):\n{message}"
                 )
             try:
-                response = httpx.get(f"{url}/", timeout=1.0)
+                response = httpx.get(f"{url}/", timeout=1.0, trust_env=False)
                 if response.is_success:
                     return ManagedServerEvidence(
                         url=url,
