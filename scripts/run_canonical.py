@@ -15,7 +15,7 @@ from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.synthetic import REGIMES
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
-E2_SYSTEM_COMMIT = "ddeaed679322c825b23e9107e65e5ddbaafe4d9c"
+E2_SYSTEM_COMMIT = "70f4943d9604cd2b5fe2df60e93521015d87fa74"
 E5_SYSTEM_COMMIT = "d4a1a59b19d8c3c869fe691e59c6349b5db987c1"
 
 
@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     add_common_arguments(e1)
     e1.add_argument("--max-live-oracle-points", type=int, default=10_000)
     e2 = subparsers.add_parser(
-        "e2", help="paired proof-driven stopping versus same-producer exhaustion"
+        "e2", help="paired proof-driven stopping versus native-bulk exact exhaustion"
     )
     add_common_arguments(e2, system_commit=E2_SYSTEM_COMMIT)
     e2.add_argument("--system-binary", type=Path)
