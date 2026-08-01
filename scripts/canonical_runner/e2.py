@@ -1,4 +1,4 @@
-"""Paired E2 execution: proof-driven stopping versus same-producer exhaustion."""
+"""Paired E2 execution: proof-driven stopping versus native bulk exhaustion."""
 
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ from .provenance import (
     git_revision,
     runner_source_sha256,
     runtime_metadata,
+    verify_hardware_manifest,
     verify_system_build_manifest,
 )
 from .runner import SCHEMA, _mismatch, _sha256_output
@@ -48,6 +49,7 @@ class E2Config:
     system_commit: str
     system_artifact: str
     hardware_profile: str
+    hardware_manifest: Path | None = None
     system_binary: Path | None = None
     system_build_manifest: Path | None = None
     dense_name: str = "dense"
@@ -85,6 +87,8 @@ def _validate(config: E2Config) -> None:
         )
     if config.system_build_manifest is None and not config.allow_dirty:
         raise RuntimeError("publication E2 requires --system-build-manifest")
+    if config.hardware_manifest is None and not config.allow_dirty:
+        raise RuntimeError("publication E2 requires --hardware-manifest")
 
 
 def _run_record(
@@ -97,6 +101,7 @@ def _run_record(
     server_evidence: ManagedServerEvidence | None,
     collection_snapshot: CollectionSnapshot | None,
     system_build_manifest_sha256: str | None,
+    hardware_manifest_sha256: str | None,
 ) -> dict[str, Any]:
     runtime = runtime_metadata(config.hardware_profile)
     return {
@@ -126,6 +131,7 @@ def _run_record(
         "benchCommit": git_revision(config.bench_repo),
         "dirty": dirty,
         "runnerSourceSha256": runner_source_sha256(config.bench_repo),
+        "hardwareManifestSha256": hardware_manifest_sha256,
         "buildProfile": "canonical-bench-release-v1",
         **runtime,
         "cacheState": "warm-counterbalanced",
@@ -210,6 +216,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
         else None
     )
     system_build_manifest_sha256 = None
+    hardware_manifest_sha256 = None
     if config.system_binary is not None:
         binary_sha256 = sha256_file(config.system_binary)
         if config.system_artifact != f"sha256:{binary_sha256}":
@@ -223,6 +230,11 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                 binary_sha256=binary_sha256,
                 system_commit=config.system_commit,
             )
+    if config.hardware_manifest is not None:
+        hardware_manifest_sha256 = verify_hardware_manifest(
+            config.hardware_manifest,
+            hardware_profile=config.hardware_profile,
+        )
     queries = snapshot.queries[: config.query_limit]
     run_id = f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:12]}"
     attempted = ok = mismatch_count = timeout_count = error_count = 0
@@ -275,6 +287,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                         server_evidence,
                         collection_snapshot,
                         system_build_manifest_sha256,
+                        hardware_manifest_sha256,
                     )
                 )
                 dynamic_operation = partial(client.producer_rrf, producer="pvs-pbm")

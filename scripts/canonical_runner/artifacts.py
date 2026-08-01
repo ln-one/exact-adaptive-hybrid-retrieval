@@ -158,24 +158,43 @@ def load_collection_snapshot(
     snapshot: DatasetSnapshot,
     collection: str,
 ) -> CollectionSnapshot:
-    base = artifact_root / "collections" / snapshot.dataset / CANONICAL_COLLECTION_FORMAT
+    # When a dataset shares documents from another (e.g. TREC-DL 2020 reuses
+    # the MS MARCO passage collection built for TREC-DL 2019), resolve the
+    # collection under the base dataset name.
+    collection_dataset = snapshot.dataset
+    source_manifest_path = (
+        artifact_root / "datasets" / snapshot.dataset / "source" / "manifest.json"
+    )
+    if source_manifest_path.is_file():
+        source_meta = read_json(source_manifest_path)
+        shared_from = source_meta.get("documents_shared_from")
+        if shared_from is not None:
+            if not isinstance(shared_from, str) or not shared_from:
+                raise RuntimeError("documents_shared_from must be a non-empty dataset name")
+            collection_dataset = shared_from
+    base = artifact_root / "collections" / collection_dataset / CANONICAL_COLLECTION_FORMAT
     manifest_path = base / "manifest.json"
     manifest = read_json(manifest_path)
     if manifest.get("schema") != "canonical-qdrant-collection-snapshot-v1":
         raise RuntimeError(f"unsupported canonical Collection snapshot: {manifest_path}")
-    expected_inputs = {
-        "sourceManifestSha256": snapshot.source_manifest_sha256,
-        "denseManifestSha256": snapshot.dense_manifest_sha256,
-        "sparseManifestSha256": snapshot.sparse_manifest_sha256,
-    }
-    if manifest.get("inputs") != expected_inputs:
-        raise RuntimeError("Collection snapshot inputs do not match canonical dataset manifests")
+    if manifest.get("dataset") != collection_dataset:
+        raise RuntimeError("Collection snapshot dataset mismatch")
+    # Query manifests differ when datasets share one indexed document corpus.
+    if collection_dataset == snapshot.dataset:
+        expected_inputs = {
+            "sourceManifestSha256": snapshot.source_manifest_sha256,
+            "denseManifestSha256": snapshot.dense_manifest_sha256,
+            "sparseManifestSha256": snapshot.sparse_manifest_sha256,
+        }
+        if manifest.get("inputs") != expected_inputs:
+            raise RuntimeError(
+                "Collection snapshot inputs do not match canonical dataset manifests"
+            )
     if (
-        manifest.get("dataset") != snapshot.dataset
-        or manifest.get("collection") != collection
+        manifest.get("collection") != collection
         or manifest.get("points") != snapshot.document_count
     ):
-        raise RuntimeError("Collection snapshot dataset, collection, or point count mismatch")
+        raise RuntimeError("Collection snapshot collection or point count mismatch")
     snapshot_spec = manifest.get("snapshot")
     if not isinstance(snapshot_spec, dict) or not isinstance(snapshot_spec.get("path"), str):
         raise RuntimeError("Collection snapshot manifest is missing snapshot.path")

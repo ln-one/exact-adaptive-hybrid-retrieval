@@ -61,6 +61,10 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
             value = provenance.get(field)
             if not isinstance(value, str) or len(value) != 64:
                 raise ValueError(f"managed provenance is missing a SHA-256 field: {field}")
+    if require_clean and run.get("experiment") == "E2":
+        hardware_manifest_sha256 = run.get("hardwareManifestSha256")
+        if not isinstance(hardware_manifest_sha256, str) or len(hardware_manifest_sha256) != 64:
+            raise ValueError("publication E2 is missing the hardware manifest SHA-256")
     if any(record.get("runId") != run_id for record in records):
         raise ValueError("record runId mismatch")
 

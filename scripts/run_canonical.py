@@ -53,6 +53,7 @@ def parse_args() -> argparse.Namespace:
     add_common_arguments(e2, system_commit=E2_SYSTEM_COMMIT)
     e2.add_argument("--system-binary", type=Path)
     e2.add_argument("--system-build-manifest", type=Path)
+    e2.add_argument("--hardware-manifest", type=Path)
     e2.add_argument("--warmups", type=int, default=2)
     e2.add_argument("--repetitions", type=int, default=5)
     e2.add_argument("--request-timeout-seconds", type=float, default=120.0)
@@ -132,6 +133,7 @@ def main() -> None:
                 system_commit=args.system_commit,
                 system_artifact=args.system_artifact,
                 hardware_profile=args.hardware_profile,
+                hardware_manifest=args.hardware_manifest,
                 system_binary=args.system_binary,
                 system_build_manifest=args.system_build_manifest,
                 dense_name=args.dense_name,

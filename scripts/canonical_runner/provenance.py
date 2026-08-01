@@ -90,3 +90,17 @@ def verify_system_build_manifest(
     ):
         raise RuntimeError("system build manifest is missing the frozen release configuration")
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_hardware_manifest(path: Path, *, hardware_profile: str) -> str:
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or manifest.get("schema") != "canonical-hardware-v1":
+        raise RuntimeError(f"unsupported canonical hardware manifest: {path}")
+    if manifest.get("hardwareProfile") != hardware_profile:
+        raise RuntimeError("hardware manifest does not match the requested hardware profile")
+    if manifest.get("architecture") != platform.machine():
+        raise RuntimeError("hardware manifest architecture does not match the running machine")
+    forbidden = {"serialNumber", "hardwareUuid", "provisioningUdid"}
+    if forbidden.intersection(manifest):
+        raise RuntimeError("hardware manifest contains a machine identifier")
+    return hashlib.sha256(path.read_bytes()).hexdigest()

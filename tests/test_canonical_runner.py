@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import platform
 import sys
 import tempfile
 import unittest
@@ -14,7 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from aggregate_e3 import aggregate as aggregate_e3
 from build_qdrant_snapshot import _collection_is_ready, _expected_indexed_vectors
-from canonical_runner.artifacts import QueryInput
+from canonical_runner.artifacts import (
+    CANONICAL_COLLECTION_FORMAT,
+    DatasetSnapshot,
+    QueryInput,
+    load_collection_snapshot,
+)
 from canonical_runner.client import QueryClient
 from canonical_runner.e2 import E2Config, run_e2
 from canonical_runner.e3 import E3Config, run_e3
@@ -22,7 +28,7 @@ from canonical_runner.e4 import E4Config, run_e4
 from canonical_runner.e5 import E5Config, run_e5
 from canonical_runner.fusion import exact_wrrf, position_score
 from canonical_runner.logs import AtomicJsonlWriter
-from canonical_runner.provenance import canonical_hash
+from canonical_runner.provenance import canonical_hash, verify_hardware_manifest
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.server import sha256_file
 from canonical_runner.synthetic import REGIMES, BalancedCertificate, generate_rankings
@@ -115,6 +121,90 @@ class CollectionSchemaTests(unittest.TestCase):
             )
         )
 
+    def test_collection_snapshot_can_reuse_a_declared_document_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dataset = "trec-dl-2020"
+            shared = "trec-dl-2019"
+            source = root / "datasets" / dataset / "source"
+            source.mkdir(parents=True)
+            (source / "manifest.json").write_text(
+                json.dumps({"documents_shared_from": shared}),
+                encoding="utf-8",
+            )
+            collection_root = root / "collections" / shared / CANONICAL_COLLECTION_FORMAT
+            collection_root.mkdir(parents=True)
+            snapshot_path = collection_root / "snapshot.snapshot"
+            snapshot_path.write_bytes(b"snapshot")
+            snapshot_sha256 = hashlib.sha256(snapshot_path.read_bytes()).hexdigest()
+            (collection_root / "manifest.json").write_text(
+                json.dumps(
+                    {
+                        "schema": "canonical-qdrant-collection-snapshot-v1",
+                        "dataset": shared,
+                        "collection": "canonical",
+                        "points": 10,
+                        "collectionConfigSha256": "config-sha256",
+                        "snapshot": {
+                            "path": snapshot_path.name,
+                            "sha256": snapshot_sha256,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = load_collection_snapshot(
+                root,
+                DatasetSnapshot(
+                    dataset=dataset,
+                    split="judged",
+                    document_count=10,
+                    queries=(),
+                    source_manifest_sha256="source",
+                    dense_manifest_sha256="dense",
+                    sparse_manifest_sha256="sparse",
+                ),
+                "canonical",
+            )
+            self.assertEqual(result.path, snapshot_path)
+
+
+class ProvenanceTests(unittest.TestCase):
+    def test_hardware_manifest_is_bound_without_machine_identifiers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "hardware.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema": "canonical-hardware-v1",
+                        "hardwareProfile": "test-machine",
+                        "architecture": platform.machine(),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                verify_hardware_manifest(path, hardware_profile="test-machine"),
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+
+    def test_hardware_manifest_rejects_machine_identifiers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "hardware.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema": "canonical-hardware-v1",
+                        "hardwareProfile": "test-machine",
+                        "architecture": platform.machine(),
+                        "serialNumber": "not-publication-safe",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(RuntimeError, "machine identifier"):
+                verify_hardware_manifest(path, hardware_profile="test-machine")
+
 
 class RunnerConfigTests(unittest.TestCase):
     def test_invalid_weights_fail_before_repository_or_http_access(self) -> None:
@@ -165,6 +255,24 @@ class RunnerConfigTests(unittest.TestCase):
             hardware_profile="test",
         )
         with self.assertRaisesRegex(RuntimeError, "managed --system-binary"):
+            run_e2(config)
+
+    def test_e2_requires_a_hardware_manifest_for_publication(self) -> None:
+        config = E2Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            url="http://unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+            system_binary=Path("/unused/qdrant"),
+            system_build_manifest=Path("/unused/build.json"),
+        )
+        with self.assertRaisesRegex(RuntimeError, "hardware-manifest"):
             run_e2(config)
 
     def test_e3_rejects_unsorted_or_duplicate_depths(self) -> None:
@@ -650,7 +758,7 @@ class ClientTests(unittest.TestCase):
                 "/internal/collections/c/points/query/exact-rrf-producer",
             )
             self.assertEqual(request.url.params["producer"], "pvs-pbm")
-            self.assertEqual(request.url.params["exhaustive"], "true")
+            self.assertEqual(request.url.params["mode"], "native-bulk-exhaustive")
             return httpx.Response(
                 200,
                 json={
@@ -684,6 +792,50 @@ class ClientTests(unittest.TestCase):
                 self.query,
                 producer="pvs-pbm",
                 exhaustive=True,
+                dense_name="dense",
+                sparse_name="sparse",
+                k=60,
+                weights=(1.0, 1.0),
+                limit=20,
+            )
+        self.assertEqual(result.point_ids, (1,))
+
+    def test_same_producer_exhaustion_uses_the_explicit_mode(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(request.url.params["mode"], "same-producer-exhaustive")
+            return httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "guarantee": {
+                            "scope": "selected-local-shards-frozen-segment-view",
+                            "orderedTopKExact": True,
+                            "tieBreak": "point-identity-ascending",
+                            "channelInput": "exact-channel-rank-streams",
+                        },
+                        "execution": {
+                            "plan": "canonical-e2-pvs-pbm-exhaustive",
+                            "stopReason": "all-sources-exhausted",
+                            "sourceExhausted": [True, True],
+                            "exhaustiveFallback": False,
+                            "producer": {
+                                "densePvsSegments": 1,
+                                "denseScalarSegments": 0,
+                                "denseScanSegments": 0,
+                                "sparsePbmSegments": 1,
+                                "sparseMaterializedSegments": 0,
+                            },
+                        },
+                    }
+                },
+            )
+
+        with QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client:
+            result = client.producer_rrf(
+                self.query,
+                producer="pvs-pbm",
+                mode="same-producer-exhaustive",
                 dense_name="dense",
                 sparse_name="sparse",
                 k=60,
