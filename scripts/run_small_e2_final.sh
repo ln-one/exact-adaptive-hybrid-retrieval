@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Run the two final, clean MS MARCO scale rows sequentially.
+# Run clean causal and engineering E2 pairs on the three small/medium datasets.
 set -euo pipefail
 
 if [[ $# -ne 2 ]]; then
@@ -16,8 +16,7 @@ binary_sha=28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980
 binary="$system_repo/target/release/qdrant"
 build_manifest="$artifact_root/manifests/build/qdrant-70f4943d-canonical-bench.json"
 hardware_manifest="$artifact_root/manifests/hardware/apple-m4-pro-24gb-v1.json"
-output_dir="$artifact_root/logs/e2"
-collection=ed-wrrf-msmarco-passage-trec-dl-2019-canonical-v2
+output_dir="$artifact_root/logs/e2/final-small"
 
 cd "$bench_repo"
 [[ -z $(git status --porcelain) ]] || { print -u2 "bench repository is dirty"; exit 1; }
@@ -41,12 +40,12 @@ if pgrep -x qdrant >/dev/null; then
   print -u2 "another qdrant process is running"
   exit 1
 fi
-free_gib=$(df -Pk "$artifact_root" | awk 'NR == 2 { printf "%d", $4 / 1024 / 1024 }')
-(( free_gib >= 100 )) || { print -u2 "only ${free_gib} GiB free; require 100 GiB"; exit 1; }
 
-run_dataset() {
+run_pair() {
   local dataset=$1
-  local output=$2
+  local baseline=$2
+  local collection="ed-wrrf-${dataset}-canonical-v2"
+  local output="$output_dir/${dataset}-${baseline}-final-v1.jsonl"
   if [[ -f $output ]]; then
     .venv/bin/python scripts/validate_canonical_log.py "$output"
     print "reuse validated output: $output"
@@ -67,7 +66,7 @@ run_dataset() {
     --system-build-manifest "$build_manifest" \
     --hardware-manifest "$hardware_manifest" \
     --system-artifact "sha256:$binary_sha" \
-    --baseline native-bulk-exhaustive \
+    --baseline "$baseline" \
     --output "$output" \
     --warmups 2 \
     --repetitions 5 \
@@ -76,8 +75,8 @@ run_dataset() {
 }
 
 mkdir -p "$output_dir"
-run_dataset msmarco-passage-trec-dl-2019 \
-  "$output_dir/msmarco-trec-dl-2019-native-bulk-final-v1.jsonl"
-run_dataset msmarco-passage-trec-dl-2020 \
-  "$output_dir/msmarco-trec-dl-2020-native-bulk-final-v1.jsonl"
-print "MS MARCO scale campaign complete"
+for dataset in nfcorpus scifact trec-covid; do
+  run_pair "$dataset" same-producer-exhaustive
+  run_pair "$dataset" native-bulk-exhaustive
+done
+print "small/medium E2 matrix complete"

@@ -241,6 +241,30 @@ class RunnerConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "repetitions"):
             run_e2(config)
 
+    def test_e2_rejects_unknown_baseline_before_repository_access(self) -> None:
+        config = E2Config(
+            artifact_root=Path("/unused"),
+            dataset="unused",
+            collection="unused",
+            url="http://unused",
+            output=Path("/unused"),
+            bench_repo=Path("/unused"),
+            system_repo=Path("/unused"),
+            system_commit="unused",
+            system_artifact="sha256:test",
+            hardware_profile="test",
+            baseline="unknown",
+        )
+        with self.assertRaisesRegex(ValueError, "baseline"):
+            run_e2(config)
+
+    def test_ms_marco_launcher_hard_codes_native_bulk(self) -> None:
+        launcher = (
+            Path(__file__).resolve().parents[1] / "scripts" / "run_ms_marco_scale_final.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("--baseline native-bulk-exhaustive", launcher)
+        self.assertNotIn("--baseline same-producer-exhaustive", launcher)
+
     def test_e2_rejects_unbound_external_server_for_publication(self) -> None:
         config = E2Config(
             artifact_root=Path("/unused"),

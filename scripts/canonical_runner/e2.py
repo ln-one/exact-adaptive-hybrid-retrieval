@@ -36,6 +36,8 @@ from .provenance import (
 from .runner import SCHEMA, _mismatch, _sha256_output
 from .server import ManagedQdrant, ManagedServerEvidence, sha256_file
 
+E2_BASELINES = ("same-producer-exhaustive", "native-bulk-exhaustive")
+
 
 @dataclass(frozen=True)
 class E2Config:
@@ -62,6 +64,7 @@ class E2Config:
     request_timeout_seconds: float = 120.0
     query_limit: int | None = None
     allow_dirty: bool = False
+    baseline: str = "native-bulk-exhaustive"
 
 
 def _validate(config: E2Config) -> None:
@@ -75,6 +78,8 @@ def _validate(config: E2Config) -> None:
         raise ValueError("warmups must be non-negative and repetitions must be positive")
     if not math.isfinite(config.request_timeout_seconds) or config.request_timeout_seconds <= 0:
         raise ValueError("request timeout must be finite and positive")
+    if config.baseline not in E2_BASELINES:
+        raise ValueError(f"unsupported E2 baseline: {config.baseline}")
     if config.query_limit is not None and config.query_limit <= 0:
         raise ValueError("query limit must be positive")
     if config.query_limit is not None and not config.allow_dirty:
@@ -109,7 +114,7 @@ def _run_record(
         "schema": SCHEMA,
         "runId": run_id,
         "experiment": "E2",
-        "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+        "method": f"paired-ed-wrrf-vs-{config.baseline}",
         "dataset": snapshot.dataset,
         "split": snapshot.split,
         "datasetManifestSha256": snapshot.source_manifest_sha256,
@@ -158,7 +163,7 @@ def _run_record(
             "requestTimeoutSeconds": config.request_timeout_seconds,
             "queryLimit": config.query_limit,
             "producer": "pvs-pbm",
-            "baseline": "native-bulk-exhaustive",
+            "baseline": config.baseline,
         },
         "startedAtUtc": datetime.now(UTC).isoformat(),
     }
@@ -294,7 +299,7 @@ def run_e2(config: E2Config) -> dict[str, Any]:
                 exhaustive_operation = partial(
                     client.producer_rrf,
                     producer="pvs-pbm",
-                    mode="native-bulk-exhaustive",
+                    mode=config.baseline,
                 )
                 sequence = 0
                 observation_count = config.warmups + config.repetitions

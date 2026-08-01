@@ -76,6 +76,18 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
     if any(not isinstance(query_id, str) or not query_id for query_id in query_ids):
         raise ValueError("queryId must be a non-empty string")
     if run.get("experiment") == "E2":
+        baseline = run.get("parameters", {}).get("baseline")
+        recognized_baselines = {
+            "same-producer-exhaustive": "canonical-e2-pvs-pbm-exhaustive",
+            "native-bulk-exhaustive": "canonical-e2-bulk-native-exhaustive",
+        }
+        if require_clean and baseline not in recognized_baselines:
+            raise ValueError("publication E2 has an unsupported exhaustive baseline")
+        if (
+            baseline in recognized_baselines
+            and run.get("method") != f"paired-ed-wrrf-vs-{baseline}"
+        ):
+            raise ValueError("E2 method does not match its exhaustive baseline")
         observation_ids = [
             (record.get("queryId"), record.get("repetition"), record.get("warmup"))
             for record in queries
@@ -97,6 +109,22 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
                 raise ValueError("E2 baseline did not report exhaustive termination")
             if exhaustive.get("sourceExhausted") != [True, True]:
                 raise ValueError("E2 baseline did not exhaust both channel streams")
+            if baseline in recognized_baselines:
+                if exhaustive.get("plan") != recognized_baselines[baseline]:
+                    raise ValueError("E2 exhaustive plan does not match its declared baseline")
+                producer = exhaustive.get("producer")
+                if not isinstance(producer, dict):
+                    raise ValueError("E2 exhaustive baseline is missing producer telemetry")
+                expected_counters = (
+                    ("densePvsSegments", "sparsePbmSegments")
+                    if baseline == "same-producer-exhaustive"
+                    else ("denseScanSegments", "sparseMaterializedSegments")
+                )
+                if any(
+                    not isinstance(producer.get(counter), int) or producer[counter] <= 0
+                    for counter in expected_counters
+                ):
+                    raise ValueError("E2 exhaustive telemetry does not match its baseline")
     elif run.get("experiment") == "E3":
         depths = run.get("parameters", {}).get("depths")
         if (

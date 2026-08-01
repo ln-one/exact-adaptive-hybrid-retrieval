@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from canonical_runner.e2 import E2Config, run_e2
+from canonical_runner.e2 import E2_BASELINES, E2Config, run_e2
 from canonical_runner.e3 import DEFAULT_DEPTHS, E3Config, run_e3
 from canonical_runner.e4 import DEFAULT_SEEDS, DEFAULT_SIZES, E4Config, run_e4
 from canonical_runner.e5 import E5Config, run_e5
@@ -57,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     e2.add_argument("--warmups", type=int, default=2)
     e2.add_argument("--repetitions", type=int, default=5)
     e2.add_argument("--request-timeout-seconds", type=float, default=120.0)
+    e2.add_argument("--baseline", choices=E2_BASELINES, default="native-bulk-exhaustive")
     e3 = subparsers.add_parser("e3", help="exact fixed-prefix WRRF information frontier")
     add_common_arguments(e3, system_commit=E2_SYSTEM_COMMIT)
     e3.add_argument("--system-binary", type=Path)
@@ -146,6 +147,7 @@ def main() -> None:
                 request_timeout_seconds=args.request_timeout_seconds,
                 query_limit=args.query_limit,
                 allow_dirty=args.allow_dirty,
+                baseline=args.baseline,
             )
         )
         print(json.dumps(summary, sort_keys=True))
