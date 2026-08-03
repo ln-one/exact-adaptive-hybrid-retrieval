@@ -22,6 +22,7 @@ from canonical_runner.client import QueryClient  # noqa: E402
 from canonical_runner.fusion import exact_wrrf  # noqa: E402
 from canonical_runner.provenance import canonical_hash  # noqa: E402
 from canonical_runner.target_validity import _verify_query_checkpoint  # noqa: E402
+from prepare_trec_covid_chronological import read_valid_ids, write_documents  # noqa: E402
 
 
 class TargetValidityClientTests(unittest.TestCase):
@@ -99,6 +100,44 @@ class TargetValidityClientTests(unittest.TestCase):
 
 
 class TargetValidityProtocolTests(unittest.TestCase):
+    def test_chronological_docid_rows_are_audited_before_deduplication(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "docids.txt"
+            path.write_text("d1\nd2\nd1\n", encoding="utf-8")
+            values, evidence = read_valid_ids(
+                path,
+                expected_rows=3,
+                expected_unique=2,
+            )
+            self.assertEqual(values, {"d1", "d2"})
+            self.assertEqual(evidence, {"rows": 3, "unique": 2, "duplicate_rows": 1})
+            with self.assertRaisesRegex(RuntimeError, "rows=3 unique=2"):
+                read_valid_ids(path, expected_rows=3, expected_unique=3)
+
+    def test_identical_metadata_duplicates_are_deduplicated_but_conflicts_fail(self) -> None:
+        header = "cord_uid,title,abstract\n"
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            identical = base / "identical.csv"
+            identical.write_text(header + "d1,Title,Text\nd1,Title,Text\n", encoding="utf-8")
+            documents, empty, duplicates = write_documents(
+                identical,
+                base / "identical.parquet",
+                {"d1"},
+                batch_rows=10,
+            )
+            self.assertEqual((documents, empty, duplicates), (1, 0, 1))
+
+            conflict = base / "conflict.csv"
+            conflict.write_text(header + "d1,Title,Text\nd1,Other,Text\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "conflicting duplicate"):
+                write_documents(
+                    conflict,
+                    base / "conflict.parquet",
+                    {"d1"},
+                    batch_rows=10,
+                )
+
     def test_empty_sparse_support_reduces_to_dense_order(self) -> None:
         self.assertEqual(
             exact_wrrf([[3, 1, 2], []], k=60, weights=[1.0, 1.0], limit=3),

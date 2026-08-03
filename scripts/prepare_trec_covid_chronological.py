@@ -28,7 +28,8 @@ ROUND_RELEASES = {
     4: "2020-06-19",
     5: "2020-07-16",
 }
-EXPECTED_VALID_DOCUMENTS = {1: 51_103, 2: 59_851, 3: 128_492, 4: 157_817, 5: 191_175}
+EXPECTED_DOCID_ROWS = {1: 51_103, 2: 59_851, 3: 128_492, 4: 157_817, 5: 191_175}
+EXPECTED_UNIQUE_DOCUMENTS = {1: 51_070, 2: 59_851, 3: 128_162, 4: 157_817, 5: 191_175}
 COMMON_TOPICS = frozenset(str(value) for value in range(1, 31))
 NIST_ROOT = "https://ir.nist.gov/trec-covid/data"
 CORD_ROOT = "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com"
@@ -93,15 +94,25 @@ def download_round(artifact_root: Path, round_id: int) -> tuple[Path, dict[str, 
     return destination, files
 
 
-def read_valid_ids(path: Path, expected: int) -> set[str]:
+def read_valid_ids(
+    path: Path,
+    *,
+    expected_rows: int,
+    expected_unique: int,
+) -> tuple[set[str], dict[str, int]]:
     values = [
         line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
-    if len(values) != expected or len(values) != len(set(values)):
+    unique = set(values)
+    if len(values) != expected_rows or len(unique) != expected_unique:
         raise RuntimeError(
-            f"unexpected valid-document list: rows={len(values)} unique={len(set(values))}"
+            f"unexpected valid-document list: rows={len(values)} unique={len(unique)}"
         )
-    return set(values)
+    return unique, {
+        "rows": len(values),
+        "unique": len(unique),
+        "duplicate_rows": len(values) - len(unique),
+    }
 
 
 def write_documents(
@@ -110,13 +121,15 @@ def write_documents(
     valid_ids: set[str],
     *,
     batch_rows: int,
-) -> tuple[int, int]:
+) -> tuple[int, int, int]:
     schema = pa.schema([("id", pa.string()), ("text", pa.string())])
     writer = pq.ParquetWriter(output, schema, compression="zstd")
     ids: list[str] = []
     texts: list[str] = []
     seen: set[str] = set()
+    seen_text: dict[str, str] = {}
     empty = 0
+    duplicate_rows = 0
 
     def flush() -> None:
         if not ids:
@@ -135,15 +148,21 @@ def write_documents(
                 document_id = (row.get("cord_uid") or "").strip()
                 if document_id not in valid_ids:
                     continue
-                if document_id in seen:
-                    raise RuntimeError(f"duplicate valid cord_uid in metadata: {document_id}")
                 title = (row.get("title") or "").strip()
                 abstract = (row.get("abstract") or "").strip()
                 text = f"{title}\n{abstract}".strip() if title else abstract
+                if document_id in seen:
+                    if seen_text[document_id] != text:
+                        raise RuntimeError(
+                            f"conflicting duplicate valid cord_uid in metadata: {document_id}"
+                        )
+                    duplicate_rows += 1
+                    continue
                 empty += not text
                 ids.append(document_id)
                 texts.append(text)
                 seen.add(document_id)
+                seen_text[document_id] = text
                 if len(ids) == batch_rows:
                     flush()
         flush()
@@ -153,7 +172,7 @@ def write_documents(
     if missing:
         sample = sorted(missing)[:5]
         raise RuntimeError(f"metadata omitted {len(missing)} valid doc IDs, e.g. {sample}")
-    return len(seen), empty
+    return len(seen), empty, duplicate_rows
 
 
 def topic_rows(path: Path) -> list[tuple[str, str]]:
@@ -228,8 +247,12 @@ def prepare_round(artifact_root: Path, round_id: int, batch_rows: int) -> dict[s
         raise RuntimeError(f"stale chronological build directory exists: {temporary}")
     temporary.mkdir(parents=True)
     try:
-        valid_ids = read_valid_ids(raw / "docids.txt", EXPECTED_VALID_DOCUMENTS[round_id])
-        documents, empty_documents = write_documents(
+        valid_ids, docid_list = read_valid_ids(
+            raw / "docids.txt",
+            expected_rows=EXPECTED_DOCID_ROWS[round_id],
+            expected_unique=EXPECTED_UNIQUE_DOCUMENTS[round_id],
+        )
+        documents, empty_documents, duplicate_metadata_rows = write_documents(
             raw / "metadata.csv",
             temporary / "documents.parquet",
             valid_ids,
@@ -255,6 +278,8 @@ def prepare_round(artifact_root: Path, round_id: int, batch_rows: int) -> dict[s
             "query_text": "official topic question field",
             "topic_scope": "common topics 1--30",
             "empty_documents": empty_documents,
+            "duplicate_metadata_rows": duplicate_metadata_rows,
+            "docid_list": docid_list,
             "rechunked": False,
             "sampled": False,
         }
