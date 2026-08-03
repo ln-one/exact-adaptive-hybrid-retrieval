@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 import httpx
+import pyarrow.parquet as pq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -98,6 +99,48 @@ class TargetValidityClientTests(unittest.TestCase):
         self.assertEqual(requested, [[1, 2], [3]])
         self.assertEqual(result, {1: "d1", 2: "d2", 3: "d3"})
 
+    def test_one_hot_wrrf_exposes_a_certified_sparse_prefix(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            body = json.loads(request.content)
+            self.assertEqual(body["exact_rrf"]["weights"], [0.0, 1.0])
+            self.assertEqual(body["limit"], 3)
+            return httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "points": [
+                            {"id": point_id, "rank": rank, "version": 1}
+                            for rank, point_id in enumerate((7, 2, 9), start=1)
+                        ],
+                        "guarantee": {
+                            "scope": "selected-local-shards-frozen-segment-view",
+                            "orderedTopKExact": True,
+                            "tieBreak": "point-identity-ascending",
+                            "channelInput": "exact-channel-rank-streams",
+                        },
+                        "execution": {
+                            "plan": "exact-rank-session-v1",
+                            "sourceExhausted": [False, True],
+                            "sourcePulls": [0, 3],
+                        },
+                    }
+                },
+            )
+
+        with QueryClient("http://test", "c", transport=httpx.MockTransport(handler)) as client:
+            result = client.certified_channel_prefix(
+                self.query,
+                channel="sparse",
+                limit=3,
+                dense_name="dense",
+                sparse_name="sparse",
+                k=60,
+            )
+        self.assertEqual(result.point_ids, (7, 2, 9))
+        self.assertEqual(result.fetched_points, 3)
+        self.assertEqual(result.request_count, 1)
+        self.assertTrue(result.exhausted)
+
 
 class TargetValidityProtocolTests(unittest.TestCase):
     def test_chronological_docid_rows_are_audited_before_deduplication(self) -> None:
@@ -114,29 +157,32 @@ class TargetValidityProtocolTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "rows=3 unique=2"):
                 read_valid_ids(path, expected_rows=3, expected_unique=3)
 
-    def test_identical_metadata_duplicates_are_deduplicated_but_conflicts_fail(self) -> None:
+    def test_metadata_duplicates_use_audited_last_occurrence_upsert(self) -> None:
         header = "cord_uid,title,abstract\n"
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
             identical = base / "identical.csv"
             identical.write_text(header + "d1,Title,Text\nd1,Title,Text\n", encoding="utf-8")
-            documents, empty, duplicates = write_documents(
+            identities, evidence = write_documents(
                 identical,
                 base / "identical.parquet",
-                {"d1"},
                 batch_rows=10,
             )
-            self.assertEqual((documents, empty, duplicates), (1, 0, 1))
+            self.assertEqual(identities, {"d1"})
+            self.assertEqual(evidence["duplicate_rows"], 1)
+            self.assertEqual(evidence["conflicting_duplicate_identities"], 0)
 
             conflict = base / "conflict.csv"
             conflict.write_text(header + "d1,Title,Text\nd1,Other,Text\n", encoding="utf-8")
-            with self.assertRaisesRegex(RuntimeError, "conflicting duplicate"):
-                write_documents(
-                    conflict,
-                    base / "conflict.parquet",
-                    {"d1"},
-                    batch_rows=10,
-                )
+            identities, evidence = write_documents(
+                conflict,
+                base / "conflict.parquet",
+                batch_rows=10,
+            )
+            self.assertEqual(identities, {"d1"})
+            self.assertEqual(evidence["conflicting_duplicate_identities"], 1)
+            values = pq.read_table(base / "conflict.parquet").to_pylist()
+            self.assertEqual(values, [{"id": "d1", "text": "Other\nText"}])
 
     def test_empty_sparse_support_reduces_to_dense_order(self) -> None:
         self.assertEqual(

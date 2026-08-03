@@ -212,6 +212,65 @@ class QueryClient:
                 )
             fetch_limit = min(corpus_points, max(fetch_limit + 1, fetch_limit * 2))
 
+    def certified_channel_prefix(
+        self,
+        query: QueryInput,
+        *,
+        channel: str,
+        limit: int,
+        dense_name: str,
+        sparse_name: str,
+        k: int,
+    ) -> ExactChannelPrefix:
+        """Produce one exact channel prefix through the certified rank streams.
+
+        A one-hot WRRF request is strictly monotone in the active channel's
+        rank. Its ordered output is therefore exactly that channel's prefix,
+        while PVS/PBM resolves score ties inside the server without exporting
+        the entire boundary tie group.
+        """
+        if limit <= 0:
+            raise ValueError("channel prefix limit must be positive")
+        if channel == "dense":
+            channel_index = 0
+            weights = (1.0, 0.0)
+        elif channel == "sparse":
+            channel_index = 1
+            weights = (0.0, 1.0)
+        else:
+            raise ValueError(f"unsupported channel: {channel}")
+        result = self.exact_rrf(
+            query,
+            dense_name=dense_name,
+            sparse_name=sparse_name,
+            k=k,
+            weights=weights,
+            limit=limit,
+        )
+        exhausted_state = result.execution.get("sourceExhausted")
+        if not (
+            isinstance(exhausted_state, list)
+            and len(exhausted_state) == 2
+            and all(isinstance(value, bool) for value in exhausted_state)
+        ):
+            raise RuntimeError("certified channel prefix lacks source exhaustion state")
+        exhausted = exhausted_state[channel_index]
+        if len(result.point_ids) < limit and not exhausted:
+            raise RuntimeError("certified channel prefix ended before limit without exhaustion")
+        pulls = result.execution.get("sourcePulls")
+        if not (
+            isinstance(pulls, list)
+            and len(pulls) == 2
+            and all(isinstance(value, int) and value >= 0 for value in pulls)
+        ):
+            raise RuntimeError("certified channel prefix lacks source pull counts")
+        return ExactChannelPrefix(
+            point_ids=result.point_ids,
+            fetched_points=pulls[channel_index],
+            request_count=1,
+            exhausted=exhausted,
+        )
+
     def _exact_channel_scores(
         self,
         *,

@@ -28,8 +28,9 @@ ROUND_RELEASES = {
     4: "2020-06-19",
     5: "2020-07-16",
 }
+EXPECTED_METADATA_ROWS = {1: 51_078, 2: 59_887, 3: 128_492, 4: 158_274, 5: 192_509}
 EXPECTED_DOCID_ROWS = {1: 51_103, 2: 59_851, 3: 128_492, 4: 157_817, 5: 191_175}
-EXPECTED_UNIQUE_DOCUMENTS = {1: 51_070, 2: 59_851, 3: 128_162, 4: 157_817, 5: 191_175}
+EXPECTED_UNIQUE_DOCID_ROWS = {1: 51_070, 2: 59_851, 3: 128_162, 4: 157_817, 5: 191_175}
 COMMON_TOPICS = frozenset(str(value) for value in range(1, 31))
 NIST_ROOT = "https://ir.nist.gov/trec-covid/data"
 CORD_ROOT = "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com"
@@ -118,18 +119,40 @@ def read_valid_ids(
 def write_documents(
     metadata: Path,
     output: Path,
-    valid_ids: set[str],
     *,
     batch_rows: int,
-) -> tuple[int, int, int]:
+) -> tuple[set[str], dict[str, int]]:
+    records: dict[str, str] = {}
+    duplicate_rows = 0
+    conflicting_duplicate_ids: set[str] = set()
+    metadata_rows = 0
+
+    with metadata.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        required = {"cord_uid", "title", "abstract"}
+        if reader.fieldnames is None or not required <= set(reader.fieldnames):
+            raise RuntimeError("CORD-19 metadata lacks cord_uid/title/abstract")
+        for row in reader:
+            metadata_rows += 1
+            document_id = (row.get("cord_uid") or "").strip()
+            if not document_id:
+                raise RuntimeError(f"CORD-19 metadata row {metadata_rows} has an empty cord_uid")
+            title = (row.get("title") or "").strip()
+            abstract = (row.get("abstract") or "").strip()
+            text = f"{title}\n{abstract}".strip() if title else abstract
+            if document_id in records:
+                duplicate_rows += 1
+                if records[document_id] != text:
+                    conflicting_duplicate_ids.add(document_id)
+            # A vector database requires one object per CORD UID. Repeated
+            # metadata identities use deterministic last-occurrence upsert
+            # semantics, while the duplicate evidence remains in the manifest.
+            records[document_id] = text
+
     schema = pa.schema([("id", pa.string()), ("text", pa.string())])
     writer = pq.ParquetWriter(output, schema, compression="zstd")
     ids: list[str] = []
     texts: list[str] = []
-    seen: set[str] = set()
-    seen_text: dict[str, str] = {}
-    empty = 0
-    duplicate_rows = 0
 
     def flush() -> None:
         if not ids:
@@ -139,40 +162,21 @@ def write_documents(
         texts.clear()
 
     try:
-        with metadata.open("r", encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle)
-            required = {"cord_uid", "title", "abstract"}
-            if reader.fieldnames is None or not required <= set(reader.fieldnames):
-                raise RuntimeError("CORD-19 metadata lacks cord_uid/title/abstract")
-            for row in reader:
-                document_id = (row.get("cord_uid") or "").strip()
-                if document_id not in valid_ids:
-                    continue
-                title = (row.get("title") or "").strip()
-                abstract = (row.get("abstract") or "").strip()
-                text = f"{title}\n{abstract}".strip() if title else abstract
-                if document_id in seen:
-                    if seen_text[document_id] != text:
-                        raise RuntimeError(
-                            f"conflicting duplicate valid cord_uid in metadata: {document_id}"
-                        )
-                    duplicate_rows += 1
-                    continue
-                empty += not text
-                ids.append(document_id)
-                texts.append(text)
-                seen.add(document_id)
-                seen_text[document_id] = text
-                if len(ids) == batch_rows:
-                    flush()
+        for document_id in sorted(records):
+            ids.append(document_id)
+            texts.append(records[document_id])
+            if len(ids) == batch_rows:
+                flush()
         flush()
     finally:
         writer.close()
-    missing = valid_ids - seen
-    if missing:
-        sample = sorted(missing)[:5]
-        raise RuntimeError(f"metadata omitted {len(missing)} valid doc IDs, e.g. {sample}")
-    return len(seen), empty, duplicate_rows
+    return set(records), {
+        "rows": metadata_rows,
+        "unique_documents": len(records),
+        "duplicate_rows": duplicate_rows,
+        "conflicting_duplicate_identities": len(conflicting_duplicate_ids),
+        "empty_documents": sum(not text for text in records.values()),
+    }
 
 
 def topic_rows(path: Path) -> list[tuple[str, str]]:
@@ -247,17 +251,20 @@ def prepare_round(artifact_root: Path, round_id: int, batch_rows: int) -> dict[s
         raise RuntimeError(f"stale chronological build directory exists: {temporary}")
     temporary.mkdir(parents=True)
     try:
-        valid_ids, docid_list = read_valid_ids(
+        _, docid_list = read_valid_ids(
             raw / "docids.txt",
             expected_rows=EXPECTED_DOCID_ROWS[round_id],
-            expected_unique=EXPECTED_UNIQUE_DOCUMENTS[round_id],
+            expected_unique=EXPECTED_UNIQUE_DOCID_ROWS[round_id],
         )
-        documents, empty_documents, duplicate_metadata_rows = write_documents(
+        valid_ids, metadata_evidence = write_documents(
             raw / "metadata.csv",
             temporary / "documents.parquet",
-            valid_ids,
             batch_rows=batch_rows,
         )
+        if metadata_evidence["rows"] != EXPECTED_METADATA_ROWS[round_id]:
+            raise RuntimeError(
+                f"unexpected metadata row count: {metadata_evidence['rows']}"
+            )
         queries = write_text_rows(topic_rows(raw / "topics.xml"), temporary / "queries.parquet")
         qrels = write_qrels(raw / "qrels.txt", temporary / "qrels.tsv", valid_ids)
         manifest: dict[str, object] = {
@@ -266,7 +273,7 @@ def prepare_round(artifact_root: Path, round_id: int, batch_rows: int) -> dict[s
             "name": dataset,
             "round": round_id,
             "cord19_release": ROUND_RELEASES[round_id],
-            "counts": {"documents": documents, "queries": queries, "qrels": qrels},
+            "counts": {"documents": len(valid_ids), "queries": queries, "qrels": qrels},
             "files": {
                 name: {"sha256": sha256_file(temporary / name)}
                 for name in ("documents.parquet", "queries.parquet", "qrels.tsv")
@@ -277,8 +284,7 @@ def prepare_round(artifact_root: Path, round_id: int, batch_rows: int) -> dict[s
             ),
             "query_text": "official topic question field",
             "topic_scope": "common topics 1--30",
-            "empty_documents": empty_documents,
-            "duplicate_metadata_rows": duplicate_metadata_rows,
+            "metadata": metadata_evidence,
             "docid_list": docid_list,
             "rechunked": False,
             "sampled": False,

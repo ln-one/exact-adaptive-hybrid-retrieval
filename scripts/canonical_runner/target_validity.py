@@ -218,6 +218,7 @@ def _run_spec(
         "queryLimit": config.query_limit,
         "sparseSupport": "strictly-positive-query-score-only",
         "tieRule": "stable-system-point-identity-ascending",
+        "prefixProducer": "one-hot-certified-exact-rank-stream",
         "timingEligibility": "diagnostic-only",
     }
     reproducibility = {
@@ -321,21 +322,21 @@ def _one_query(
 ) -> dict[str, Any]:
     started = time.perf_counter_ns()
     max_depth = config.depths[-1]
-    dense = client.exact_channel_prefix(
+    dense = client.certified_channel_prefix(
         query,
         channel="dense",
         limit=max_depth,
-        corpus_points=snapshot.document_count,
         dense_name=config.dense_name,
         sparse_name=config.sparse_name,
+        k=config.rrf_k,
     )
-    sparse = client.exact_channel_prefix(
+    sparse = client.certified_channel_prefix(
         query,
         channel="sparse",
         limit=max_depth,
-        corpus_points=snapshot.document_count,
         dense_name=config.dense_name,
         sparse_name=config.sparse_name,
+        k=config.rrf_k,
     )
     full = client.producer_rrf(
         query,
