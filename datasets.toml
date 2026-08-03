@@ -60,6 +60,46 @@ queries = 50
 split = "test"
 license_status = "research-only-mixed-cord19-rights"
 
+[datasets.trec_covid_chrono_r1]
+tier = "target-validity"
+loader_id = "trec-covid/chronological/round-1"
+documents = 51103
+queries = 30
+split = "chronological-common-topics"
+license_status = "research-only-mixed-cord19-rights"
+
+[datasets.trec_covid_chrono_r2]
+tier = "target-validity"
+loader_id = "trec-covid/chronological/round-2"
+documents = 59851
+queries = 30
+split = "chronological-common-topics"
+license_status = "research-only-mixed-cord19-rights"
+
+[datasets.trec_covid_chrono_r3]
+tier = "target-validity"
+loader_id = "trec-covid/chronological/round-3"
+documents = 128492
+queries = 30
+split = "chronological-common-topics"
+license_status = "research-only-mixed-cord19-rights"
+
+[datasets.trec_covid_chrono_r4]
+tier = "target-validity"
+loader_id = "trec-covid/chronological/round-4"
+documents = 157817
+queries = 30
+split = "chronological-common-topics"
+license_status = "research-only-mixed-cord19-rights"
+
+[datasets.trec_covid_chrono_r5]
+tier = "target-validity"
+loader_id = "trec-covid/chronological/round-5"
+documents = 191175
+queries = 30
+split = "chronological-common-topics"
+license_status = "research-only-mixed-cord19-rights"
+
 [datasets.touche_2020]
 tier = "core"
 loader_id = "beir/webis-touche2020"
@@ -116,4 +156,3 @@ queries_2019 = 43
 queries_2020 = 54
 split = "official-judged"
 license_status = "research-only-source-terms-required"
-

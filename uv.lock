@@ -1125,14 +1125,14 @@ wheels = [
 
 [[package]]
 name = "ir-measures"
-version = "0.4.2"
+version = "0.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytrec-eval-terrier" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/a4/e18c4185e9a95d95aad6f123e01504e02efd4edda2fe786cf85a1d80d103/ir_measures-0.4.2.tar.gz", hash = "sha256:a42ec9c794a51bf45a99c4f75322fed8648fd762596a2e933c51b7cb62e74046", size = 51232, upload-time = "2025-11-04T15:03:35.508Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/b4/d931aa71a73353cf0b8446b3d7ce9ed789e7fe595778d7e061e86faea28d/ir_measures-0.4.3.tar.gz", hash = "sha256:869a6019efefb02dda8b77ca0f68d6d57b01fe34998a46c76425b9fbb396e827", size = 51224, upload-time = "2025-11-25T17:36:52.06Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/52/5be7b9f7c05c7b21e778be5a716a032b2ac59dfaac306dc0097981ceea48/ir_measures-0.4.2-py3-none-any.whl", hash = "sha256:681a8eb3f48ee3e1e4dda2acc741e2d4053bb3f8711fb675e12fbc261a4fd7a5", size = 61314, upload-time = "2025-11-04T15:03:34.615Z" },
+    { url = "https://files.pythonhosted.org/packages/76/62/15199767ad9f1e3f793dec253ba6f662cb36e7197fc647bc844a6ecb99bf/ir_measures-0.4.3-py3-none-any.whl", hash = "sha256:3d8b3b5283e4a77df85f9f6c8a1c2c99a7421b78fa014ef97f2ddab3037d3dcf", size = 61311, upload-time = "2025-11-25T17:36:51.183Z" },
 ]
 
 [[package]]
@@ -2656,7 +2656,7 @@ requires-dist = [
     { name = "httpx", specifier = "==0.28.1" },
     { name = "huggingface-hub", specifier = "==0.34.4" },
     { name = "ir-datasets", specifier = "==0.5.11" },
-    { name = "ir-measures", specifier = "==0.4.2" },
+    { name = "ir-measures", specifier = "==0.4.3" },
     { name = "numpy", specifier = "==2.3.2" },
     { name = "pyarrow", specifier = "==21.0.0" },
     { name = "sentence-transformers", specifier = "==5.1.0" },

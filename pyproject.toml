@@ -8,7 +8,7 @@ dependencies = [
   "huggingface-hub==0.34.4",
   "httpx==0.28.1",
   "ir-datasets==0.5.11",
-  "ir-measures==0.4.2",
+  "ir-measures==0.4.3",
   "numpy==2.3.2",
   "pyarrow==21.0.0",
   "sentence-transformers==5.1.0",

@@ -37,6 +37,7 @@ E2_SAME_PRODUCER_EXHAUSTIVE_PLANS = {
 class ExactRrfResult:
     point_ids: tuple[PointId, ...]
     execution: dict[str, Any]
+    point_scores: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -104,6 +105,48 @@ class QueryClient:
             "config": payload["config"],
         }
 
+    def external_ids(
+        self,
+        point_ids: list[PointId] | tuple[PointId, ...],
+        *,
+        batch_size: int = 256,
+    ) -> dict[PointId, str]:
+        """Resolve frozen evaluation identities from canonical point payloads."""
+        if batch_size <= 0:
+            raise ValueError("payload batch size must be positive")
+        unique = list(dict.fromkeys(point_ids))
+        resolved: dict[PointId, str] = {}
+        for offset in range(0, len(unique), batch_size):
+            batch = unique[offset : offset + batch_size]
+            response = self._client.post(
+                f"/collections/{self.collection}/points",
+                json={"ids": batch, "with_payload": True, "with_vector": False},
+            )
+            response.raise_for_status()
+            points = response.json().get("result")
+            if not isinstance(points, list):
+                raise RuntimeError("Qdrant point lookup response is missing result")
+            for point in points:
+                identity = point.get("id")
+                payload = point.get("payload")
+                external_id = payload.get("external_id") if isinstance(payload, dict) else None
+                if (
+                    not isinstance(identity, int | str)
+                    or isinstance(identity, bool)
+                    or not isinstance(external_id, str)
+                    or not external_id
+                ):
+                    raise RuntimeError("Qdrant point payload lacks a valid external_id")
+                if identity in resolved:
+                    raise RuntimeError("Qdrant point lookup returned a duplicate identity")
+                resolved[identity] = external_id
+        missing = set(unique) - resolved.keys()
+        if missing:
+            raise RuntimeError(f"Qdrant point lookup omitted {len(missing)} identities")
+        if len(resolved.values()) != len(set(resolved.values())):
+            raise RuntimeError("canonical payload maps multiple points to one external_id")
+        return resolved
+
     def exact_channel_order(
         self,
         query: QueryInput,
@@ -150,7 +193,15 @@ class QueryClient:
         while True:
             request_count += 1
             scored = self._exact_channel_scores(vector=vector, using=using, limit=fetch_limit)
-            exhausted = len(scored) < fetch_limit or fetch_limit == corpus_points
+            positive_support_closed = False
+            if channel == "sparse":
+                if any(score < 0 for _, score in scored):
+                    raise RuntimeError("exact Sparse channel returned a negative score")
+                positive_support_closed = any(score == 0 for _, score in scored)
+                scored = [(identity, score) for identity, score in scored if score > 0]
+            exhausted = (
+                positive_support_closed or len(scored) < fetch_limit or fetch_limit == corpus_points
+            )
             boundary_closed = len(scored) <= target or scored[target - 1][1] > scored[target][1]
             if exhausted or boundary_closed:
                 return ExactChannelPrefix(
@@ -467,9 +518,21 @@ class QueryClient:
             raise RuntimeError("Stratumind returned an invalid point identity")
         if len(identities) != len(set(identities)):
             raise RuntimeError("Stratumind returned duplicate identities")
+        scores = tuple(point.get("score") for point in points)
+        if any(
+            not isinstance(value, int | float)
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+            for value in scores
+        ):
+            raise RuntimeError("Stratumind returned an invalid fused score")
         execution = payload.get("execution")
         if not isinstance(execution, dict):
             raise RuntimeError("Stratumind response is missing execution telemetry")
         if execution.get("plan") != expected_plan:
             raise RuntimeError(f"Stratumind execution plan mismatch: {execution.get('plan')!r}")
-        return ExactRrfResult(point_ids=identities, execution=execution)
+        return ExactRrfResult(
+            point_ids=identities,
+            execution=execution,
+            point_scores=tuple(float(value) for value in scores),
+        )

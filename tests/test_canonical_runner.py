@@ -701,7 +701,7 @@ class ClientTests(unittest.TestCase):
                 200,
                 json={
                     "result": {
-                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "points": [{"id": 1, "rank": 1, "score": 0.1, "version": 1}],
                         "guarantee": {
                             "scope": "selected-local-shards-frozen-segment-view",
                             "orderedTopKExact": True,
@@ -739,7 +739,7 @@ class ClientTests(unittest.TestCase):
                 200,
                 json={
                     "result": {
-                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "points": [{"id": 1, "rank": 1, "score": 0.1, "version": 1}],
                         "guarantee": {
                             "scope": "selected-local-shards-frozen-segment-view",
                             "orderedTopKExact": True,
@@ -787,7 +787,7 @@ class ClientTests(unittest.TestCase):
                 200,
                 json={
                     "result": {
-                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "points": [{"id": 1, "rank": 1, "score": 0.1, "version": 1}],
                         "guarantee": {
                             "scope": "selected-local-shards-frozen-segment-view",
                             "orderedTopKExact": True,
@@ -831,7 +831,7 @@ class ClientTests(unittest.TestCase):
                 200,
                 json={
                     "result": {
-                        "points": [{"id": 1, "rank": 1, "version": 1}],
+                        "points": [{"id": 1, "rank": 1, "score": 0.1, "version": 1}],
                         "guarantee": {
                             "scope": "selected-local-shards-frozen-segment-view",
                             "orderedTopKExact": True,
