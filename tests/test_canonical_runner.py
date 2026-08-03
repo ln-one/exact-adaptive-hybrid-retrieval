@@ -701,7 +701,7 @@ class ClientTests(unittest.TestCase):
                 200,
                 json={
                     "result": {
-                        "points": [{"id": 1, "rank": 1, "score": 0.1, "version": 1}],
+                        "points": [{"id": 1, "rank": 1, "version": 1}],
                         "guarantee": {
                             "scope": "selected-local-shards-frozen-segment-view",
                             "orderedTopKExact": True,
@@ -727,6 +727,7 @@ class ClientTests(unittest.TestCase):
                 limit=20,
             )
         self.assertEqual(result.point_ids, (1,))
+        self.assertEqual(result.point_scores, ())
 
     def test_e5_client_rejects_a_silent_dense_fallback(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:

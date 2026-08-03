@@ -518,12 +518,15 @@ class QueryClient:
             raise RuntimeError("Stratumind returned an invalid point identity")
         if len(identities) != len(set(identities)):
             raise RuntimeError("Stratumind returned duplicate identities")
-        scores = tuple(point.get("score") for point in points)
-        if any(
+        raw_scores = tuple(point.get("score") for point in points)
+        scores_present = tuple(value is not None for value in raw_scores)
+        if any(scores_present) and not all(scores_present):
+            raise RuntimeError("Stratumind returned fused scores for only part of the result")
+        if all(scores_present) and any(
             not isinstance(value, int | float)
             or isinstance(value, bool)
             or not math.isfinite(value)
-            for value in scores
+            for value in raw_scores
         ):
             raise RuntimeError("Stratumind returned an invalid fused score")
         execution = payload.get("execution")
@@ -534,5 +537,7 @@ class QueryClient:
         return ExactRrfResult(
             point_ids=identities,
             execution=execution,
-            point_scores=tuple(float(value) for value in scores),
+            point_scores=(
+                tuple(float(value) for value in raw_scores) if all(scores_present) else ()
+            ),
         )

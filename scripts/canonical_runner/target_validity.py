@@ -126,7 +126,9 @@ def _method_order(
 def _assert_same_result(reference: ExactRrfResult, actual: ExactRrfResult) -> None:
     if reference.point_ids != actual.point_ids:
         raise RuntimeError("native-bulk Full WRRF and EAHR identities/order differ")
-    if reference.point_scores != actual.point_scores:
+    if bool(reference.point_scores) != bool(actual.point_scores):
+        raise RuntimeError("native-bulk Full WRRF and EAHR score availability differs")
+    if reference.point_scores and reference.point_scores != actual.point_scores:
         raise RuntimeError("native-bulk Full WRRF and EAHR fused scores differ")
 
 
@@ -165,8 +167,10 @@ def _local_complete_reference(
     )
     local_ids = tuple(point_id for point_id, _ in fused)
     local_scores = tuple(float(score) for _, score in fused)
-    if local_ids != full.point_ids or local_scores != full.point_scores:
+    if local_ids != full.point_ids:
         raise RuntimeError("local complete-support reconstruction differs from Full WRRF")
+    if full.point_scores and local_scores != full.point_scores:
+        raise RuntimeError("local complete-support scores differ from Full WRRF")
     return {
         "denseExhausted": dense.exhausted,
         "sparseExhausted": sparse.exhausted,
@@ -187,7 +191,7 @@ def _boundary(result: ExactRrfResult, limit: int) -> dict[str, Any]:
         return {
             "rank": rank,
             "pointId": result.point_ids[index],
-            "score": result.point_scores[index],
+            "score": result.point_scores[index] if result.point_scores else None,
         }
 
     return {"rankK": item(limit), "rankKPlusOne": item(limit + 1)}
@@ -406,6 +410,7 @@ def _one_query(
         "full": {
             "orderedPointIdsTop101": list(full.point_ids),
             "scoresTop101": list(full.point_scores),
+            "scoresAvailable": bool(full.point_scores),
             "orderedExternalIdsTop100": methods["full-wrrf"],
             "boundary": _boundary(full, config.limit),
             "execution": full.execution,
@@ -413,6 +418,7 @@ def _one_query(
         "eahr": {
             "orderedPointIdsTop101": list(eahr.point_ids),
             "scoresTop101": list(eahr.point_scores),
+            "scoresAvailable": bool(eahr.point_scores),
             "execution": eahr.execution,
             "matchesFull": True,
         },
