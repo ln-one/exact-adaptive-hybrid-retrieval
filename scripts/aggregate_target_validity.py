@@ -107,7 +107,19 @@ def method_names(data: RunData) -> tuple[str, ...]:
             raise RuntimeError("method rows differ between Queries")
     if names is None or "full-wrrf" not in names:
         raise RuntimeError("run contains no Full WRRF method")
-    return names
+    return tuple(sorted(names, key=method_sort_key))
+
+
+def method_sort_key(method: str) -> tuple[int, int]:
+    if method == "dense":
+        return (0, 0)
+    if method == "sparse":
+        return (1, 0)
+    if method.startswith(FIXED_PREFIX):
+        return (2, int(method.removeprefix(FIXED_PREFIX)))
+    if method == "full-wrrf":
+        return (3, 0)
+    raise RuntimeError(f"unsupported target-validity method: {method}")
 
 
 def metric_values(data: RunData) -> dict[str, dict[str, dict[str, float]]]:
