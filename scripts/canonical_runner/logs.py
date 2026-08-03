@@ -26,10 +26,16 @@ class AtomicJsonlWriter:
         self._handle.flush()
 
     def commit(self) -> None:
+        self.commit_as(self.destination)
+
+    def commit_as(self, destination: Path) -> None:
+        if destination.exists():
+            raise FileExistsError(f"canonical raw log already exists: {destination}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
         self._handle.flush()
         os.fsync(self._handle.fileno())
         self._handle.close()
-        os.link(self.temporary, self.destination)
+        os.link(self.temporary, destination)
         self.temporary.unlink()
         self._committed = True
 

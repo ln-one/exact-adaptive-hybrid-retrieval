@@ -43,7 +43,7 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
         raise ValueError("publication log was produced from a dirty repository")
     if require_clean and run.get("parameters", {}).get("queryLimit") is not None:
         raise ValueError("query-limited development log is not publication evidence")
-    if require_clean and run.get("experiment") in {"E2", "E3", "E5"}:
+    if require_clean and run.get("experiment") in {"E2", "E3", "E5", "E5-v2"}:
         provenance = run.get("serverProvenance")
         if not isinstance(provenance, dict) or provenance.get("mode") != (
             "managed-isolated-snapshot"
@@ -61,10 +61,10 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
             value = provenance.get(field)
             if not isinstance(value, str) or len(value) != 64:
                 raise ValueError(f"managed provenance is missing a SHA-256 field: {field}")
-    if require_clean and run.get("experiment") == "E2":
+    if require_clean and run.get("experiment") in {"E2", "E5-v2"}:
         hardware_manifest_sha256 = run.get("hardwareManifestSha256")
         if not isinstance(hardware_manifest_sha256, str) or len(hardware_manifest_sha256) != 64:
-            raise ValueError("publication E2 is missing the hardware manifest SHA-256")
+            raise ValueError("publication log is missing the hardware manifest SHA-256")
     if any(record.get("runId") != run_id for record in records):
         raise ValueError("record runId mismatch")
 
@@ -233,6 +233,80 @@ def validate_log(path: Path, *, require_clean: bool = True) -> dict[str, int]:
                     or not isinstance(measurement.get("producer"), dict)
                 ):
                     raise ValueError("E5 producer measurement is incomplete")
+    elif run.get("experiment") == "E5-v2":
+        parameters = run.get("parameters", {})
+        producers = parameters.get("producers")
+        warmups = parameters.get("warmups")
+        repetitions = parameters.get("repetitions")
+        declared_query_ids = run.get("queryIds")
+        if (
+            producers != [
+                "pvs-pbm",
+                "scalar-pbm",
+                "scan-pbm",
+                "pvs-sparse-materialized",
+            ]
+            or not isinstance(warmups, int)
+            or warmups < 0
+            or not isinstance(repetitions, int)
+            or repetitions <= 0
+            or not isinstance(declared_query_ids, list)
+            or not declared_query_ids
+            or len(declared_query_ids) != len(set(declared_query_ids))
+        ):
+            raise ValueError("E5-v2 run is missing its blocked observation matrix")
+        if query_ids != declared_query_ids:
+            raise ValueError("E5-v2 Query records do not match the declared shard order")
+        if summary.get("measuredObservations") != len(queries) * len(producers) * repetitions:
+            raise ValueError("E5-v2 measured observation count mismatch")
+        if summary.get("warmupObservations") != len(queries) * len(producers) * warmups:
+            raise ValueError("E5-v2 warmup observation count mismatch")
+        for record in queries:
+            if record.get("status") != "ok":
+                raise ValueError("a sealed E5-v2 shard may contain only successful Queries")
+            order = record.get("blockOrder")
+            blocks = record.get("blocks")
+            if (
+                not isinstance(order, list)
+                or set(order) != set(producers)
+                or len(order) != len(producers)
+                or not isinstance(blocks, dict)
+                or set(blocks) != set(producers)
+            ):
+                raise ValueError("E5-v2 Query is missing its complete producer blocks")
+            reference = record.get("orderedIds")
+            logical_signature = record.get("logicalSignature")
+            if not isinstance(reference, list) or not isinstance(logical_signature, dict):
+                raise ValueError("E5-v2 Query is missing its ordered/logical reference")
+            for producer in order:
+                observations = blocks[producer]
+                if not isinstance(observations, list) or len(observations) != warmups + repetitions:
+                    raise ValueError("E5-v2 producer block has the wrong observation count")
+                for index, observation in enumerate(observations):
+                    expected_warmup = index < warmups
+                    expected_repetition = index + 1 if expected_warmup else index - warmups + 1
+                    if (
+                        observation.get("warmup") is not expected_warmup
+                        or observation.get("repetition") != expected_repetition
+                        or not isinstance(observation.get("latencyNs"), int)
+                        or observation["latencyNs"] <= 0
+                        or observation.get("orderedIds") != reference
+                        or observation.get("orderedResultSha256") != canonical_hash(reference)
+                        or not isinstance(observation.get("producer"), dict)
+                    ):
+                        raise ValueError("E5-v2 producer observation is incomplete or inconsistent")
+                    observed_logical = {
+                        field: observation.get(field)
+                        for field in (
+                            "sourcePulls",
+                            "sourceExhausted",
+                            "certificationChecks",
+                            "sourcePointsMaterialized",
+                            "stopReason",
+                        )
+                    }
+                    if observed_logical != logical_signature:
+                        raise ValueError("E5-v2 logical fusion work differs across producers")
     elif len(query_ids) != len(set(query_ids)):
         raise ValueError("duplicate queryId in canonical log")
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import shutil
 import signal
 import socket
 import subprocess
@@ -56,12 +57,14 @@ class ManagedQdrant(AbstractContextManager[ManagedServerEvidence]):
         collection: str,
         snapshot: Path | None,
         startup_timeout_seconds: float = 900.0,
+        failure_log_path: Path | None = None,
     ) -> None:
         self.binary = binary.resolve(strict=True)
         self.system_repo = system_repo.resolve(strict=True)
         self.collection = collection
         self.snapshot = snapshot.resolve(strict=True) if snapshot is not None else None
         self.startup_timeout_seconds = startup_timeout_seconds
+        self.failure_log_path = failure_log_path
         self._temporary: tempfile.TemporaryDirectory[str] | None = None
         self._process: subprocess.Popen[bytes] | None = None
         self._log = None
@@ -105,6 +108,7 @@ class ManagedQdrant(AbstractContextManager[ManagedServerEvidence]):
             if return_code is not None:
                 self._log.flush()
                 message = log_path.read_text(encoding="utf-8", errors="replace")[-8_000:]
+                self._preserve_failure_log()
                 self.__exit__(None, None, None)
                 raise RuntimeError(
                     f"managed Qdrant exited during startup ({return_code}):\n{message}"
@@ -121,10 +125,18 @@ class ManagedQdrant(AbstractContextManager[ManagedServerEvidence]):
             except httpx.HTTPError:
                 pass
             time.sleep(0.1)
+        self._preserve_failure_log()
         self.__exit__(None, None, None)
         raise TimeoutError("managed Qdrant did not become ready before the startup deadline")
 
-    def __exit__(self, *_: object) -> None:
+    def _preserve_failure_log(self) -> None:
+        if self._log is None or self.failure_log_path is None:
+            return
+        self._log.flush()
+        self.failure_log_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(self._log.name, self.failure_log_path)
+
+    def __exit__(self, *exception: object) -> None:
         process = self._process
         if process is not None and process.poll() is None:
             os.killpg(process.pid, signal.SIGINT)
@@ -134,6 +146,9 @@ class ManagedQdrant(AbstractContextManager[ManagedServerEvidence]):
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait(timeout=10)
         if self._log is not None:
+            self._log.flush()
+            if exception and exception[0] is not None and self.failure_log_path is not None:
+                self._preserve_failure_log()
             self._log.close()
         if self._temporary is not None:
             self._temporary.cleanup()

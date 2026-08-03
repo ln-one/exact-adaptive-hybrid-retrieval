@@ -11,16 +11,26 @@ from canonical_runner.e2 import E2_BASELINES, E2Config, run_e2
 from canonical_runner.e3 import DEFAULT_DEPTHS, E3Config, run_e3
 from canonical_runner.e4 import DEFAULT_SEEDS, DEFAULT_SIZES, E4Config, run_e4
 from canonical_runner.e5 import E5Config, run_e5
+from canonical_runner.e5_v2 import (
+    E5V2PlanConfig,
+    E5V2ShardConfig,
+    plan_e5_v2,
+    run_e5_v2_shard,
+)
 from canonical_runner.runner import E1Config, run_e1
 from canonical_runner.synthetic import REGIMES
 
 FROZEN_SYSTEM_COMMIT = "cf9d988386b9b63f5ba559deb76e0f66b55c0fde"
 E2_SYSTEM_COMMIT = "70f4943d9604cd2b5fe2df60e93521015d87fa74"
 E5_SYSTEM_COMMIT = "d4a1a59b19d8c3c869fe691e59c6349b5db987c1"
+E5_V2_SYSTEM_COMMIT = E2_SYSTEM_COMMIT
 
 
 def add_common_arguments(
-    parser: argparse.ArgumentParser, *, system_commit: str = FROZEN_SYSTEM_COMMIT
+    parser: argparse.ArgumentParser,
+    *,
+    system_commit: str = FROZEN_SYSTEM_COMMIT,
+    include_query_limit: bool = True,
 ) -> None:
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--dataset", required=True)
@@ -37,7 +47,8 @@ def add_common_arguments(
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--rrf-k", type=int, default=60)
     parser.add_argument("--weights", nargs=2, type=float, default=(1.0, 1.0))
-    parser.add_argument("--query-limit", type=int)
+    if include_query_limit:
+        parser.add_argument("--query-limit", type=int)
     parser.add_argument("--allow-dirty", action="store_true")
 
 
@@ -86,6 +97,42 @@ def parse_args() -> argparse.Namespace:
     e5.add_argument("--warmups", type=int, default=2)
     e5.add_argument("--repetitions", type=int, default=5)
     e5.add_argument("--process-starts", type=int, default=3)
+    e5_v2_plan = subparsers.add_parser(
+        "e5-v2-plan", help="freeze a method-self-warmed E5-v2 campaign manifest"
+    )
+    add_common_arguments(
+        e5_v2_plan,
+        system_commit=E5_V2_SYSTEM_COMMIT,
+        include_query_limit=False,
+    )
+    e5_v2_plan.add_argument("--system-binary", type=Path, required=True)
+    e5_v2_plan.add_argument("--system-build-manifest", type=Path, required=True)
+    e5_v2_plan.add_argument("--hardware-manifest", type=Path, required=True)
+    e5_v2_plan.add_argument("--rounds", type=int, default=3)
+    e5_v2_plan.add_argument("--shard-size", type=int, default=0)
+    e5_v2_plan.add_argument("--warmups", type=int, default=2)
+    e5_v2_plan.add_argument("--repetitions", type=int, default=4)
+    e5_v2_plan.add_argument("--query-ids", nargs="+", default=())
+    e5_v2_plan.add_argument("--request-timeout-seconds", type=float, default=1_200.0)
+    e5_v2_plan.add_argument("--startup-timeout-seconds", type=float, default=1_800.0)
+    e5_v2_plan.add_argument("--shard-wall-timeout-seconds", type=float, default=21_600.0)
+    e5_v2_shard = subparsers.add_parser(
+        "e5-v2-shard", help="run one immutable shard from an E5-v2 campaign"
+    )
+    e5_v2_shard.add_argument("--artifact-root", type=Path, required=True)
+    e5_v2_shard.add_argument("--campaign-manifest", type=Path, required=True)
+    e5_v2_shard.add_argument("--round", type=int, required=True)
+    e5_v2_shard.add_argument("--shard", type=int, required=True)
+    e5_v2_shard.add_argument("--output", type=Path, required=True)
+    e5_v2_shard.add_argument("--failed-dir", type=Path, required=True)
+    e5_v2_shard.add_argument(
+        "--bench-repo", type=Path, default=Path(__file__).resolve().parents[1]
+    )
+    e5_v2_shard.add_argument("--system-repo", type=Path, required=True)
+    e5_v2_shard.add_argument("--system-binary", type=Path, required=True)
+    e5_v2_shard.add_argument("--system-build-manifest", type=Path, required=True)
+    e5_v2_shard.add_argument("--hardware-manifest", type=Path, required=True)
+    e5_v2_shard.add_argument("--allow-dirty", action="store_true")
     return parser.parse_args()
 
 
@@ -241,6 +288,56 @@ def main() -> None:
             or summary["errorQueries"] > 0
         ):
             raise SystemExit(2)
+    elif args.experiment == "e5-v2-plan":
+        campaign = plan_e5_v2(
+            E5V2PlanConfig(
+                artifact_root=args.artifact_root,
+                dataset=args.dataset,
+                collection=args.collection,
+                output=args.output,
+                bench_repo=args.bench_repo,
+                system_repo=args.system_repo,
+                system_commit=args.system_commit,
+                system_artifact=args.system_artifact,
+                hardware_profile=args.hardware_profile,
+                hardware_manifest=args.hardware_manifest,
+                system_binary=args.system_binary,
+                system_build_manifest=args.system_build_manifest,
+                dense_name=args.dense_name,
+                sparse_name=args.sparse_name,
+                limit=args.limit,
+                rrf_k=args.rrf_k,
+                weights=tuple(args.weights),
+                rounds=args.rounds,
+                shard_size=args.shard_size,
+                warmups=args.warmups,
+                repetitions=args.repetitions,
+                request_timeout_seconds=args.request_timeout_seconds,
+                startup_timeout_seconds=args.startup_timeout_seconds,
+                shard_wall_timeout_seconds=args.shard_wall_timeout_seconds,
+                query_ids=tuple(args.query_ids),
+                allow_dirty=args.allow_dirty,
+            )
+        )
+        print(json.dumps(campaign, sort_keys=True))
+    elif args.experiment == "e5-v2-shard":
+        summary = run_e5_v2_shard(
+            E5V2ShardConfig(
+                artifact_root=args.artifact_root,
+                campaign_manifest=args.campaign_manifest,
+                round_number=args.round,
+                shard_number=args.shard,
+                output=args.output,
+                failed_dir=args.failed_dir,
+                bench_repo=args.bench_repo,
+                system_repo=args.system_repo,
+                system_binary=args.system_binary,
+                system_build_manifest=args.system_build_manifest,
+                hardware_manifest=args.hardware_manifest,
+                allow_dirty=args.allow_dirty,
+            )
+        )
+        print(json.dumps(summary, sort_keys=True))
 
 
 if __name__ == "__main__":

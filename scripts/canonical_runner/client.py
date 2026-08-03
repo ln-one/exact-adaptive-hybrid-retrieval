@@ -55,8 +55,12 @@ class QueryClient:
         *,
         timeout_seconds: float = 120.0,
         transport: httpx.BaseTransport | None = None,
+        slot_retry_max: int | None = None,
     ) -> None:
+        if slot_retry_max is not None and slot_retry_max <= 0:
+            raise ValueError("slot retry maximum must be positive")
         self.collection = collection
+        self._slot_retry_max = slot_retry_max or self._SLOT_RETRY_MAX
         self._client = httpx.Client(
             base_url=base_url.rstrip("/"),
             timeout=timeout_seconds,
@@ -415,7 +419,7 @@ class QueryClient:
             "limit": limit,
         }
         last_response = None
-        for attempt in range(self._SLOT_RETRY_MAX):
+        for attempt in range(self._slot_retry_max):
             response = self._client.post(endpoint, json=payload_body)
             if response.is_success:
                 last_response = response
@@ -436,7 +440,7 @@ class QueryClient:
             )
         if last_response is None or not last_response.is_success:
             raise RuntimeError(
-                f"Stratumind exact request failed after {self._SLOT_RETRY_MAX} retries "
+                f"Stratumind exact request failed after {self._slot_retry_max} retries "
                 f"({last_response.status_code if last_response else 'no response'}): "
                 f"{last_response.text if last_response else ''}"
             )
