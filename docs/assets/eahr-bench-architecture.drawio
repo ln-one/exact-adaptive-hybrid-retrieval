@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="31.1.5">
+  <diagram id="eahr-bench-architecture" name="EAHR Bench Architecture">
+    <mxGraphModel dx="1420" dy="880" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="EAHR Bench: from public inputs to verifiable paper evidence" style="text;html=1;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#17324D;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Three boundaries keep third-party data, executable experiments, and public source data separate." style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#5B6B7A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="inputs" value="1  Frozen inputs" style="swimlane;startSize=42;container=1;pointerEvents=0;rounded=1;arcSize=8;html=1;fontSize=16;fontStyle=1;fontColor=#36424D;fillColor=#F7F9FB;strokeColor=#AAB5BF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="350" height="650" as="geometry" />
+        </mxCell>
+        <mxCell id="harness" value="2  Reproduction harness" style="swimlane;startSize=42;container=1;pointerEvents=0;rounded=1;arcSize=8;html=1;fontSize=16;fontStyle=1;fontColor=#244A73;fillColor=#F3F8FD;strokeColor=#6C9ACB;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="420" y="110" width="440" height="650" as="geometry" />
+        </mxCell>
+        <mxCell id="evidence" value="3  Evidence and public release" style="swimlane;startSize=42;container=1;pointerEvents=0;rounded=1;arcSize=8;html=1;fontSize=16;fontStyle=1;fontColor=#2E5B3C;fillColor=#F4FAF5;strokeColor=#79A985;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="890" y="110" width="470" height="650" as="geometry" />
+        </mxCell>
+
+        <mxCell id="datasets" value="Public benchmarks&#xa;&lt;font style=&quot;font-size:11px;color:#667788&quot;&gt;BEIR · MS MARCO · TREC-COVID&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFFFFF;strokeColor=#7E8B96;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#36424D;spacing=8;" vertex="1" parent="inputs">
+          <mxGeometry x="40" y="90" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="models" value="Frozen representations&#xa;&lt;font style=&quot;font-size:11px;color:#667788&quot;&gt;model revision · tokenizer · BM25 contract&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFFFFF;strokeColor=#7E8B96;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#36424D;spacing=8;" vertex="1" parent="inputs">
+          <mxGeometry x="40" y="250" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="implementation" value="StratuMind implementation&#xa;&lt;font style=&quot;font-size:11px;color:#667788&quot;&gt;commit · release binary · build manifest&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;fillColor=#FFFFFF;strokeColor=#7E8B96;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#36424D;spacing=8;" vertex="1" parent="inputs">
+          <mxGeometry x="40" y="410" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="input-note" value="Not redistributed&#xa;&lt;font style=&quot;font-size:11px;color:#667788&quot;&gt;Upstream licences and access routes remain authoritative.&lt;/font&gt;" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF8E7;strokeColor=#D6B656;fontSize=12;fontStyle=1;fontColor=#6A5620;spacing=8;" vertex="1" parent="inputs">
+          <mxGeometry x="40" y="550" width="270" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="prepare" value="Prepare and validate&#xa;&lt;font style=&quot;font-size:11px;color:#4A6782&quot;&gt;fetch gates · dense/sparse builders · checksums&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#DCEBFA;strokeColor=#5C8FBE;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#244A73;spacing=8;" vertex="1" parent="harness">
+          <mxGeometry x="70" y="80" width="300" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="runner" value="Canonical runner&#xa;&lt;font style=&quot;font-size:11px;color:#4A6782&quot;&gt;fixed snapshot · exact contract · provenance&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#C9E0F5;strokeColor=#4E82B0;strokeWidth=2;fontSize=15;fontStyle=1;fontColor=#173E65;spacing=8;" vertex="1" parent="harness">
+          <mxGeometry x="70" y="260" width="300" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="experiments" value="Experiment matrix&#xa;&lt;font style=&quot;font-size:11px;color:#4A6782&quot;&gt;E1 exactness · E2 cost · E3 depth · E4 regimes · E5 producers&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#B6D6F0;strokeColor=#3F75A4;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#173E65;spacing=8;" vertex="1" parent="harness">
+          <mxGeometry x="70" y="460" width="300" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="archive" value="Canonical evidence archive&#xa;&lt;font style=&quot;font-size:11px;color:#53685A&quot;&gt;raw logs · aggregates · run manifests · SHA-256&lt;/font&gt;" style="shape=cylinder3;size=16;boundedLbl=1;whiteSpace=wrap;html=1;fillColor=#D9EAD3;strokeColor=#6A9B73;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#2E5B3C;spacingTop=10;" vertex="1" parent="evidence">
+          <mxGeometry x="85" y="65" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="packager" value="Deterministic public packager&#xa;&lt;font style=&quot;font-size:11px;color:#53685A&quot;&gt;select · sanitize paths · hash · map claims&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#D9EAD3;strokeColor=#6A9B73;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#2E5B3C;spacing=8;" vertex="1" parent="evidence">
+          <mxGeometry x="85" y="235" width="300" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="public-package" value="paper-results/&#xa;&lt;font style=&quot;font-size:11px;color:#53685A&quot;&gt;10 CSVs · data dictionary · manifest · provenance&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#C6E0C8;strokeColor=#568E62;strokeWidth=2;fontSize=15;fontStyle=1;fontColor=#244D31;spacing=8;" vertex="1" parent="evidence">
+          <mxGeometry x="85" y="390" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="release" value="Reader verification and archive&#xa;&lt;font style=&quot;font-size:11px;color:#53685A&quot;&gt;one command · GitHub release · persistent identifier&lt;/font&gt;" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#B7D9BC;strokeColor=#477C52;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#244D31;spacing=8;" vertex="1" parent="evidence">
+          <mxGeometry x="85" y="545" width="300" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge-datasets-prepare" value="documents + qrels" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#7E8B96;fontColor=#56636E;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.45;entryX=0;entryY=0.35;" edge="1" parent="1" source="datasets" target="prepare">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-models-prepare" value="frozen revisions" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#7E8B96;fontColor=#56636E;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.75;" edge="1" parent="1" source="models" target="prepare">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-implementation-runner" value="binary + build manifest" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#7E8B96;fontColor=#56636E;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.6;" edge="1" parent="1" source="implementation" target="runner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-prepare-runner" value="validated artifacts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#4E82B0;fontColor=#365E82;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="prepare" target="runner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-runner-experiments" value="immutable campaigns" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#4E82B0;fontColor=#365E82;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="runner" target="experiments">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-experiments-archive" value="logs + aggregates" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#568E62;fontColor=#3F6848;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.45;entryX=0;entryY=0.65;" edge="1" parent="1" source="experiments" target="archive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-archive-packager" value="content-addressed inputs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#568E62;fontColor=#3F6848;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="archive" target="packager">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-packager-package" value="processed source data only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#568E62;fontColor=#3F6848;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="packager" target="public-package">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-package-release" value="verify hashes + schema" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#477C52;fontColor=#3F6848;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="public-package" target="release">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="footer" value="Public Git stays small: source code + processed results + provenance. Large or restricted artifacts remain in the canonical archive." style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#41566A;fillColor=#EEF3F7;strokeColor=#C3CFD8;rounded=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="800" width="1000" height="45" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

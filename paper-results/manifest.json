@@ -1,0 +1,309 @@
+{
+  "contents": "Processed source data for the reported figures, table, and result claims.",
+  "derived_files": [
+    {
+      "bytes": 2625,
+      "columns": [
+        "dataset",
+        "baseline",
+        "measured_queries",
+        "measured_observations",
+        "dynamic_p50_ms",
+        "dynamic_p95_ms",
+        "dynamic_p99_ms",
+        "baseline_p50_ms",
+        "baseline_p95_ms",
+        "baseline_p99_ms",
+        "paired_ratio",
+        "paired_ratio_ci95_low",
+        "paired_ratio_ci95_high",
+        "paired_win_rate",
+        "dense_pull_ratio_median",
+        "sparse_pull_ratio_median",
+        "source_sha256"
+      ],
+      "paper_source": "tables/generated/results-e2-efficiency.csv",
+      "path": "derived/aggregate-efficiency.csv",
+      "rows": 8,
+      "sha256": "4eb747d249e84d6681d7b40bf93bb321a29a3dd99fed420f91dae6788ce9f584",
+      "source_sha256": [
+        "49e14874534e3dc59bfab273cc1bde1d1821b7df0dd53792cc7d5d1a73dc0b9a",
+        "6ba15e65f9ae747da5ad63f74cebd697601d5438de897a2b00e9e0358f853034",
+        "6d2e8b5221f7864a787eb097a3ea61b3b504859719714b174e16a065e95a6342",
+        "93005b3e463dfcedc9485bbf6471b183e51404e0efcf4592edd24ffdc3f3ae88",
+        "956824cb34a1c332650c1b73fa6ee0292351c84fffd7557620b943709ee4cc69",
+        "b562825c1b4bca1005fa4039a30710e8e5f48f2f4fc5363a0846815da5bd3578",
+        "cc023d27c2b82fa43ad6ea4082cfd095f44fc48d7184cb0695e2a5eb5ff15ed6",
+        "f9a7b1e3c132fb03b934b60458ff54c5591c82f50d6453b3d8aa5ae922f51934"
+      ],
+      "supports": "Figure 4 aggregate latency and access comparisons"
+    },
+    {
+      "bytes": 2187,
+      "columns": [
+        "size",
+        "regime",
+        "top_window_overlap",
+        "certificate_depth_median",
+        "certificate_depth_min",
+        "certificate_depth_max",
+        "work_ratio_median",
+        "work_ratio_min",
+        "work_ratio_max",
+        "exhaustive_cases",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/results-e4-regimes.csv",
+      "path": "derived/controlled-ranking-regimes.csv",
+      "rows": 15,
+      "sha256": "5bc699ea484129f43b750a9da2ad22464a57ffe27e038ce85f8cc374ee492e56",
+      "source_sha256": [
+        "4bbe6c1a60ac023e8ce972b6c18cbb287c49d251473667bfb24024734451963c"
+      ],
+      "supports": "Controlled correlation-regime access behavior"
+    },
+    {
+      "bytes": 45725,
+      "columns": [
+        "dataset",
+        "queries",
+        "method",
+        "depth",
+        "metric",
+        "mean",
+        "paired_difference_from_full",
+        "paired_difference_ci95_low",
+        "paired_difference_ci95_high",
+        "primary_eligible",
+        "candidate_union_contains_full",
+        "membership_exact",
+        "ordered_exact",
+        "ordered_exact_ci95_low",
+        "ordered_exact_ci95_high",
+        "longest_exact_prefix",
+        "full_membership_recall",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/results-target-validity-static.csv",
+      "path": "derived/fixed-depth-effectiveness.csv",
+      "rows": 180,
+      "sha256": "48628ea773c7024c5fcdca245aba625c458539ee701449470c057e6829b15394",
+      "source_sha256": [
+        "6b3ab93491cb8288082c32b27161bfdfd906e3a364464e089332f498c284bd63",
+        "86c5b9477db775c57ac001fbadc0c84f78d4f7b27cb4571f124b5554e034f678",
+        "870f4fb5fed0817b8acb598244b502e4a5180d5c467d1c4bec867125b7f04782",
+        "88b09d6eb8de130805a0ca25629f629aa17872f9c545c808461124594686e32b",
+        "f319018e85013dc6a333d4a5038af6bd88d5473be3872a3609658ff09b8a497f"
+      ],
+      "supports": "Figure 2 and static retrieval-effectiveness claims"
+    },
+    {
+      "bytes": 4727,
+      "columns": [
+        "dataset",
+        "depth",
+        "queries",
+        "ordered_exact_rate",
+        "ordered_exact_ci95_low",
+        "ordered_exact_ci95_high",
+        "membership_exact_rate",
+        "candidate_union_contains_oracle_rate",
+        "mean_oracle_recall",
+        "median_candidate_union_size",
+        "median_exposed_ranks",
+        "candidate_missing",
+        "candidate_present_but_wrong",
+        "order_only",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/results-e3-fixed-prefix.csv",
+      "path": "derived/fixed-prefix-agreement.csv",
+      "rows": 24,
+      "sha256": "71d92ce167e660942bc4963bb37246881af5f00de5125a73b21c4a5a6de353ac",
+      "source_sha256": [
+        "4fab4bbbd4666ac8bf288c0a262ba6a9f6afbf48b1ae9dec2aa7e8bc2462fbd8",
+        "516d101a446e4f557ab493f332daed765d44567baad5e35b575d4809c8dee7a6",
+        "81b1aff8464db90f2c279d42e95fc8c09b1ab5193013b9882690d8944d415456"
+      ],
+      "supports": "Fixed-depth membership and ordered agreement"
+    },
+    {
+      "bytes": 1020,
+      "columns": [
+        "dataset",
+        "baseline",
+        "measured_queries",
+        "measured_observations",
+        "membership_mismatches",
+        "order_mismatches",
+        "tie_mismatches",
+        "timeouts",
+        "errors",
+        "source_sha256"
+      ],
+      "paper_source": "tables/generated/results-e1-correctness.csv",
+      "path": "derived/ordered-correctness.csv",
+      "rows": 8,
+      "sha256": "ee45d39e84fa1a833568e0865de30a2c7d2501d954844af98711471376a2c450",
+      "source_sha256": [
+        "157795a1720604bf62664da17b08825161de709e12180cf06bcd7e9839c91460",
+        "1a4adca03996fc83fcf4173dada618513c07fea7d75742d0ef62de2950250a51",
+        "3679debddf2f37bc8cc4fd79d990cd94ce3a70122e7a68376d754b9ead8377ba",
+        "459eb4e12f4a58e0ea9a91ec1865cc0d36da75d4cca01154c30d4e35940b7af5",
+        "866c0a40a395cb407921669b7916c47a49aaa6594edf8d98d53afd555a29144a",
+        "905561045163c9c72dbfb93da255eec96b71c352d8832ddf223dfa073a72bbea",
+        "a16f733d1de23fe72298d1d389d9457728af6883374034720af3bbbb1d8967a6",
+        "e4b9707f2fe24a7e751799e2121a87b09840470c93bbc06df513ec9b6be0d0da"
+      ],
+      "supports": "Ordered-result parity and failure counts"
+    },
+    {
+      "bytes": 14615,
+      "columns": [
+        "dataset",
+        "query_id",
+        "dynamic_median_ms",
+        "native_bulk_median_ms",
+        "paired_ratio",
+        "dynamic_wins",
+        "measured_repetitions",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/results-e2-scale-per-query.csv",
+      "path": "derived/per-query-latency.csv",
+      "rows": 97,
+      "sha256": "e067234387bcc46c029e1fa063e23dd670a44f5b38025d093185d92ca759a151",
+      "source_sha256": [
+        "1a4adca03996fc83fcf4173dada618513c07fea7d75742d0ef62de2950250a51",
+        "3679debddf2f37bc8cc4fd79d990cd94ce3a70122e7a68376d754b9ead8377ba"
+      ],
+      "supports": "Query-level latency ratios and tail cases"
+    },
+    {
+      "bytes": 26366,
+      "columns": [
+        "round",
+        "snapshot",
+        "dataset",
+        "queryId",
+        "denseDepth",
+        "sparseDepth",
+        "denseFullDepth",
+        "sparseFullDepth",
+        "denseReadRatio",
+        "sparseReadRatio",
+        "denseExhausted",
+        "sparseExhausted",
+        "orderedMismatch",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/fig_eahr_chronological_per_query.csv",
+      "path": "derived/query-snapshot-access.csv",
+      "rows": 150,
+      "sha256": "9ae526df255cb8863bd987d1f61e00f4f596ec8ffe4e828015dd7a2cdd9d6ba5",
+      "source_sha256": [
+        "50e8debfaec7c1f4fe332f84674b5d4972eee9083c7da639f2182f7d09abc07a"
+      ],
+      "supports": "Figure 3 request-level access variation"
+    },
+    {
+      "bytes": 445,
+      "columns": [
+        "channel",
+        "metric",
+        "transform",
+        "observations",
+        "queries",
+        "snapshots",
+        "query_share",
+        "snapshot_share",
+        "query_snapshot_interaction_share",
+        "source_sha256"
+      ],
+      "paper_source": "figures/data/fig_eahr_query_snapshot_variance.csv",
+      "path": "derived/query-snapshot-variance.csv",
+      "rows": 2,
+      "sha256": "5b41bea3bd6ae7f182aa66f55628a44354643654bf182c4044cdc48fb177d798",
+      "source_sha256": [
+        "50e8debfaec7c1f4fe332f84674b5d4972eee9083c7da639f2182f7d09abc07a"
+      ],
+      "supports": "Query, snapshot, and interaction variance decomposition"
+    },
+    {
+      "bytes": 4363,
+      "columns": [
+        "dataset",
+        "plan",
+        "reference_plan",
+        "measured_queries",
+        "rounds",
+        "repetitions_per_round",
+        "measured_observations",
+        "p50_ms",
+        "p95_ms",
+        "p99_ms",
+        "ratio_vs_reference",
+        "ratio_ci95_low",
+        "ratio_ci95_high",
+        "query_win_rate",
+        "query_round_win_rate",
+        "dense_exact_scores_median",
+        "dense_quantized_scores_median",
+        "sparse_posting_elements_visited_median",
+        "sparse_materialized_exact_scores_median",
+        "source_sha256"
+      ],
+      "paper_source": "tables/generated/results-e5-producers.csv",
+      "path": "derived/rank-generator-ablation.csv",
+      "rows": 16,
+      "sha256": "7465c2aed778bc35e6fcd3cc9d70df5b3970de242e7cbafcef9b0f3e51b16859",
+      "source_sha256": [
+        "7cdf3d45359e77f578050a3dee15083e2f42dd800df3214536fe0b4f72b131e4",
+        "d2c7b17dbc41558dc8dee31bb0705cf47b50d1cf882cd72d5d96aabdeec5bb2b",
+        "d56cb2e334a7bd387db57ef05917554d01c657f6ccf60623f2587b9f8884a67b",
+        "ea38899dd16d8a4ccf9b8af9d7bb076d64b054dfeef2adb1bace4708252df941"
+      ],
+      "supports": "Table 1 PVS and PBM rank-generator comparisons"
+    },
+    {
+      "bytes": 2000,
+      "columns": [
+        "round",
+        "snapshot",
+        "queries",
+        "full_wrrf_ndcg10",
+        "cross_fitted_fixed_l_ndcg10",
+        "paired_ndcg10_difference",
+        "paired_ndcg10_ci95_low",
+        "paired_ndcg10_ci95_high",
+        "diagnostic_best_l",
+        "ordered_top20_exact_rate",
+        "dense_depth_median",
+        "sparse_depth_median",
+        "dense_read_ratio_median",
+        "sparse_read_ratio_median",
+        "dense_exhaustions",
+        "sparse_exhaustions",
+        "ordered_mismatches",
+        "quality_aggregate_sha256",
+        "eahr_depth_aggregate_sha256"
+      ],
+      "paper_source": "figures/data/fig_eahr_chronological.csv",
+      "path": "derived/temporal-transfer-summary.csv",
+      "rows": 5,
+      "sha256": "356847a17a08247b56ebe6a0045b82f923abd33a92b0ad2b8fcee2b0a55cc3ee",
+      "source_sha256": [
+        "795e6e974200d5c4d07ef0a8ba9ae5ab7b00b1f4b8090f87014cd1b355687a01",
+        "a63e96561f9406139f790315b8a95cb956e3a22668a6c9160838360b44fec4ef"
+      ],
+      "supports": "Temporal fixed-depth transfer and aggregate adaptive access"
+    }
+  ],
+  "schema": "eahr-public-paper-results-v1",
+  "source_evidence": {
+    "files": 181,
+    "path": "source-evidence.json",
+    "sha256": "4210f3126d04846c2d583daf47e358a063a0693906b7fdc9a9b0106e56648ff4"
+  },
+  "title": "Exact Adaptive Hybrid Retrieval Without Fixed Top-L Cutoffs"
+}

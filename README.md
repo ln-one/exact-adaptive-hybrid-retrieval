@@ -1,96 +1,168 @@
-# Stratumind Bench
+# EAHR Bench
 
-Reproducible data and experiment pipeline for ED-WRRF.
+Reproducible experiments and processed result data for **Exact Adaptive Hybrid
+Retrieval Without Fixed Top-L Cutoffs**.
 
-The source repository contains only configuration, manifests, and scripts.
-Generated artifacts live under:
+This repository keeps three concerns separate: licensed upstream inputs,
+executable experiments, and the compact evidence that readers can inspect
+without downloading corpora or rebuilding indexes.
+
+![EAHR Bench evidence architecture](docs/assets/eahr-bench-architecture.svg)
+
+The editable source for this diagram is
+[`docs/assets/eahr-bench-architecture.drawio`](docs/assets/eahr-bench-architecture.drawio).
+
+## Start here
+
+| Goal | Entry point | Needs large artifacts? |
+| --- | --- | --- |
+| Inspect the data behind the paper | [`paper-results/`](paper-results/) | No |
+| Verify every published CSV and checksum | `uv run python scripts/verify_public_paper_results.py` | No |
+| Understand the evidence contract | [`docs/canonical-data-protocol.md`](docs/canonical-data-protocol.md) | No |
+| Reproduce an experiment | [`scripts/run_canonical.py`](scripts/run_canonical.py) | Yes |
+
+The corresponding Qdrant-based retrieval implementation is maintained in
+[StratuMind](https://github.com/ln-one/StratuMind). Publication runs identify
+that implementation by commit, binary digest, and build manifest; a branch tip
+is never treated as an experimental identifier.
+
+## Repository map
 
 ```text
-/Users/ln1/Projects/stratumind-artifacts/canonical-v1
+paper-results/                 processed paper data, schemas, hashes, provenance
+scripts/run_canonical.py       publication experiment runner
+scripts/build_public_*.py      deterministic public-package builder
+scripts/verify_public_*.py     reader-side package verifier
+docs/                          data contracts, use register, architecture source
+tests/                         source and evidence-package checks
+datasets.toml                  dataset registry and artifact layout
 ```
 
-Estimate the working set:
+The repository does **not** redistribute benchmark corpora, model caches,
+vector indexes, or raw run logs. Those remain under their upstream terms in a
+caller-selected artifact root outside Git.
+
+## Verify the public package
+
+With Python 3.11--3.13 and [`uv`](https://docs.astral.sh/uv/) installed:
 
 ```bash
-python3 scripts/estimate_storage.py
+uv sync --frozen
+uv run python scripts/verify_public_paper_results.py
+uv run python -m unittest discover -s tests
 ```
 
-Fetch the core BEIR archives with archive and capacity checks:
+These checks need no datasets or models. They validate the ten processed CSVs,
+their schemas and row counts, SHA-256 checksums, the sanitized source-evidence
+index, and the absence of absolute local paths.
+
+## Experiment scope
+
+The canonical harness covers:
+
+- **E1** — ordered-result parity with complete-list weighted RRF;
+- **E2** — paired execution-cost and latency comparisons;
+- **E3** — fixed-depth effectiveness and ranking agreement;
+- **E4** — controlled rank-stream regimes;
+- **E5** — exact dense and sparse rank-generator comparisons;
+- temporal target-validity experiments over TREC-COVID snapshots.
+
+Dense vectors, sparse impacts, system binaries, and hardware records are frozen
+by generated manifests. See
+[`docs/canonical-data-protocol.md`](docs/canonical-data-protocol.md) for the
+full evidence contract and [`docs/data-use-register.md`](docs/data-use-register.md)
+for dataset access and redistribution boundaries.
+
+## Prepare an artifact root
+
+Full reproduction additionally requires JDK 21, the separately locked
+Pyserini environment, a clean checkout of the recorded StratuMind revision,
+and sufficient local storage.
 
 ```bash
-python3 scripts/fetch_beir.py --tier core
-```
+export EAHR_ARTIFACT_ROOT=/path/to/eahr-artifacts/canonical-v1
+mkdir -p "$EAHR_ARTIFACT_ROOT"
 
-Large archives are always explicit:
-
-```bash
-python3 scripts/fetch_beir.py --dataset cqadupstack
-```
-
-MS MARCO is prepared through its fixed `ir_datasets` identifiers after the
-core archive and representation gates pass.
-
-The lexical reference and portable Sparse impacts use an isolated Pyserini
-runtime so its Transformer dependency cannot alter the frozen Dense encoder:
-
-```bash
-JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home \
-PATH=/opt/homebrew/opt/openjdk@21/bin:$PATH \
-.venv-sparse/bin/python scripts/build_lucene_bm25.py \
-  --artifact-root /Users/ln1/Projects/stratumind-artifacts/canonical-v1 \
+uv run python scripts/estimate_storage.py --root "$EAHR_ARTIFACT_ROOT"
+uv run python scripts/fetch_beir.py \
+  --root "$EAHR_ARTIFACT_ROOT" \
   --dataset nfcorpus
 ```
 
-`scripts/build_bm25_impacts.py` materializes the corresponding portable,
-non-negative Sparse vectors. Both builders write atomic, checksum-backed
-artifacts outside this Git repository.
+Large archives are never selected implicitly. BEIR availability is not treated
+as a license grant.
 
-To load a verified Dense/Sparse pair later, create a matching named-vector
-collection, then run `load_qdrant_dense.py` followed by `load_qdrant_sparse.py`.
-The sparse loader uses Qdrant's vector-update endpoint so it does not overwrite
-the Dense vector already stored for the same deterministic point identity.
-
-## Canonical experiment runner
-
-`run_canonical.py` is the thin publication harness. Its first executable family
-is E1 ordered parity: Qdrant exact channel queries produce the exhaustive Dense
-and Sparse orders, the runner applies Stratumind's frozen WRRF formula and
-identity tie rule, and the Production `exact-rrf` response must match.
-
-Create the Collection with the explicit Production profile:
+The portable non-negative sparse representation is built in the isolated
+sparse environment:
 
 ```bash
-.venv/bin/python scripts/create_qdrant_collection.py \
-  --url http://127.0.0.1:6333 \
-  --collection ed-wrrf-nfcorpus \
-  --exact-rank-profile dense_sparse_v1
+JAVA_HOME=/path/to/jdk-21 \
+PATH=/path/to/jdk-21/bin:$PATH \
+.venv-sparse/bin/python scripts/build_lucene_bm25.py \
+  --artifact-root "$EAHR_ARTIFACT_ROOT" \
+  --dataset nfcorpus
 ```
 
-After loading both representations, run E1:
+## Run a canonical check
+
+After preparing and loading a collection, E1 obtains exact dense and sparse
+rankings, applies the frozen weighted-RRF and tie-order contract, and compares
+that oracle with the StratuMind response:
 
 ```bash
-.venv/bin/python scripts/run_canonical.py e1 \
-  --artifact-root /Users/ln1/Projects/stratumind-artifacts/canonical-v1 \
+uv run python scripts/run_canonical.py e1 \
+  --artifact-root "$EAHR_ARTIFACT_ROOT" \
   --dataset nfcorpus \
   --collection ed-wrrf-nfcorpus \
-  --system-repo /path/to/frozen/Stratumind \
-  --system-artifact sha256:<container-or-binary-digest> \
+  --system-repo /path/to/frozen/StratuMind \
+  --system-artifact sha256:<binary-or-container-digest> \
   --output /path/to/results/e1-nfcorpus.jsonl
-```
 
-Canonical execution refuses dirty source repositories. `--allow-dirty` exists
-only for development dry runs; such logs carry `"dirty": true` and fail the
-publication validator by default.
-
-E1 latency is correctness-instrumentation latency: the exhaustive oracle is
-queried before the method and the record is marked `correctness-validation`.
-It must not be copied into the E2 performance table.
-
-```bash
-.venv/bin/python scripts/validate_canonical_log.py \
+uv run python scripts/validate_canonical_log.py \
   /path/to/results/e1-nfcorpus.jsonl
 ```
 
-The live exhaustive HTTP oracle is intentionally bounded to small corpora.
-Larger datasets require a separately frozen exhaustive-oracle artifact rather
-than returning millions of identities through one HTTP response.
+Canonical execution rejects dirty source repositories by default.
+`--allow-dirty` is a development escape hatch; it marks records dirty and makes
+them ineligible for publication validation. E1 includes correctness-oracle
+work and must not be reported as E2 performance latency.
+
+The clean E5-v2 counterbalanced campaign also requires a unique run label:
+
+```bash
+bash scripts/run_e5_v2_counterbalanced_overnight.sh \
+  "$EAHR_ARTIFACT_ROOT" \
+  /path/to/frozen/StratuMind \
+  e5-v2-clean-YYYYMMDD
+```
+
+## Rebuild the compact result package
+
+Readers normally use the checked-in package. Maintainers with the private paper
+tree and canonical evidence archive can reproduce it deterministically:
+
+```bash
+uv run python scripts/build_public_paper_results.py \
+  --paper-root /path/to/stratumind-paper \
+  --artifact-root /path/to/eahr-artifacts/canonical-v1 \
+  --verify-sources
+```
+
+`--verify-sources` re-hashes every indexed frozen input. It is separate from
+reader-side verification because the large inputs are not redistributed.
+
+## Provenance status
+
+The checked-in E5-v2 measurements retain their original dirty-source flag;
+they are not silently relabeled. Their recorded runner hashes match the later
+committed harness, while a new clean-checkout rerun is maintained as a separate
+campaign. The exact scope and interpretation are documented in
+[`paper-results/PROVENANCE_NOTES.md`](paper-results/PROVENANCE_NOTES.md).
+
+## License and citation
+
+Harness code is licensed under Apache-2.0. Author-generated processed data in
+`paper-results/derived/` is licensed under CC BY 4.0; neither license applies to
+third-party corpora, models, or other upstream artifacts. See
+[`paper-results/LICENSE.md`](paper-results/LICENSE.md) and
+[`CITATION.cff`](CITATION.cff).

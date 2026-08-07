@@ -135,7 +135,10 @@ def safe_extract(archive: Path, destination: Path) -> tuple[int, int]:
 def main() -> None:
     args = parse_args()
     config = load_config(args.config)
-    root = args.root or Path(config["storage"]["default_root"])
+    configured_root = Path(config["storage"]["default_root"])
+    if not configured_root.is_absolute():
+        configured_root = args.config.resolve().parent / configured_root
+    root = (args.root or configured_root).resolve()
     archives = root / "archives"
     raw = root / "raw"
     manifests = root / "manifests"
@@ -201,4 +204,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("cancelled", file=sys.stderr)
         raise SystemExit(130)
-

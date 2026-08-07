@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bench_repo="/Users/ln1/Projects/stratumind-bench"
-artifact_root="/Users/ln1/Projects/stratumind-artifacts/canonical-v1"
-system_repo="/Users/ln1/Projects/stratumind-e5"
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 ARTIFACT_ROOT STRATUMIND_REPO" >&2
+  exit 2
+fi
+
+bench_repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+artifact_root="$(cd "$1" && pwd)"
+system_repo="$(cd "$2" && pwd)"
 system_binary="${system_repo}/target/release/qdrant"
 build_manifest="${artifact_root}/manifests/build/qdrant-70f4943d-canonical-bench.json"
 hardware_manifest="${artifact_root}/manifests/hardware/apple-m4-pro-24gb-v1.json"

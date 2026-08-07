@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this experiment harness, please cite the EAHR paper."
+title: "EAHR Bench"
+type: software
+authors:
+  - family-names: Zhang
+    given-names: Chunran
+version: 0.1.0
+date-released: 2026-08-08
+license: Apache-2.0
+repository-code: "https://github.com/ln-one/eahr-bench"
+url: "https://github.com/ln-one/eahr-bench"
+preferred-citation:
+  type: article
+  title: "Exact Adaptive Hybrid Retrieval Without Fixed Top-L Cutoffs"
+  authors:
+    - family-names: Zhang
+      given-names: Chunran
+  year: 2026

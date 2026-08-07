@@ -1,0 +1,31 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  public-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install locked environment
+        run: uv sync --frozen
+      - name: Verify public result data
+        run: uv run python scripts/verify_public_paper_results.py
+      - name: Run tests
+        run: uv run python -m unittest discover -s tests
+      - name: Compile Python sources
+        run: uv run python -m compileall -q scripts tests
+      - name: Lint public-release additions
+        run: >-
+          uvx ruff check
+          scripts/build_public_paper_results.py
+          scripts/verify_public_paper_results.py
+          tests/test_public_paper_results.py

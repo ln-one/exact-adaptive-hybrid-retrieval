@@ -1,0 +1,9 @@
+dataset,baseline,measured_queries,measured_observations,membership_mismatches,order_mismatches,tie_mismatches,timeouts,errors,source_sha256
+nfcorpus,same-producer,323,1615,0,0,0,0,0,905561045163c9c72dbfb93da255eec96b71c352d8832ddf223dfa073a72bbea
+nfcorpus,native-bulk,323,1615,0,0,0,0,0,157795a1720604bf62664da17b08825161de709e12180cf06bcd7e9839c91460
+scifact,same-producer,300,1500,0,0,0,0,0,459eb4e12f4a58e0ea9a91ec1865cc0d36da75d4cca01154c30d4e35940b7af5
+scifact,native-bulk,300,1500,0,0,0,0,0,a16f733d1de23fe72298d1d389d9457728af6883374034720af3bbbb1d8967a6
+trec-covid,same-producer,50,250,0,0,0,0,0,e4b9707f2fe24a7e751799e2121a87b09840470c93bbc06df513ec9b6be0d0da
+trec-covid,native-bulk,50,250,0,0,0,0,0,866c0a40a395cb407921669b7916c47a49aaa6594edf8d98d53afd555a29144a
+msmarco-passage-trec-dl-2019,native-bulk,43,215,0,0,0,0,0,3679debddf2f37bc8cc4fd79d990cd94ce3a70122e7a68376d754b9ead8377ba
+msmarco-passage-trec-dl-2020,native-bulk,54,270,0,0,0,0,0,1a4adca03996fc83fcf4173dada618513c07fea7d75742d0ef62de2950250a51

@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bench_repo="/Users/ln1/Projects/stratumind-bench"
-artifact_root="/Users/ln1/Projects/stratumind-artifacts/canonical-v1"
-system_repo="/Users/ln1/Projects/stratumind-e5"
+if [[ $# -ne 3 ]]; then
+  echo "usage: $0 ARTIFACT_ROOT STRATUMIND_REPO RUN_LABEL" >&2
+  exit 2
+fi
+
+bench_repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+artifact_root="$(cd "$1" && pwd)"
+system_repo="$(cd "$2" && pwd)"
+run_label="$3"
+if [[ ! "${run_label}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+  echo "RUN_LABEL must contain only letters, digits, dots, underscores, and hyphens" >&2
+  exit 2
+fi
 system_binary="${system_repo}/target/release/qdrant"
 build_manifest="${artifact_root}/manifests/build/qdrant-70f4943d-canonical-bench.json"
 hardware_manifest="${artifact_root}/manifests/hardware/apple-m4-pro-24gb-v1.json"
 system_artifact="sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980"
-run_root="${artifact_root}/runs/e5-v2-counterbalanced-full-coverage-20260803"
+run_root="${artifact_root}/runs/${run_label}"
 
 run_dataset() {
   local dataset="$1"
@@ -40,8 +50,7 @@ run_dataset() {
       --repetitions 2 \
       --request-timeout-seconds 1200 \
       --startup-timeout-seconds 1800 \
-      --shard-wall-timeout-seconds 21600 \
-      --allow-dirty
+      --shard-wall-timeout-seconds 21600
   fi
 
   "${bench_repo}/.venv/bin/python" "${bench_repo}/scripts/run_e5_v2_campaign.py" \
@@ -53,15 +62,13 @@ run_dataset() {
     --system-repo "${system_repo}" \
     --system-binary "${system_binary}" \
     --system-build-manifest "${build_manifest}" \
-    --hardware-manifest "${hardware_manifest}" \
-    --allow-dirty
+    --hardware-manifest "${hardware_manifest}"
 
   if [[ ! -f "${aggregate}" ]]; then
     "${bench_repo}/.venv/bin/python" "${bench_repo}/scripts/aggregate_e5_v2.py" \
       --campaign-manifest "${campaign}" \
       --output "${aggregate}" \
       --failed-dir "${failed_dir}" \
-      --allow-dirty \
       "${shard_dir}"/*.jsonl
   fi
 }

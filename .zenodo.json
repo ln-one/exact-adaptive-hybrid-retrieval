@@ -1,0 +1,27 @@
+{
+  "title": "EAHR Bench: Reproducible Experiments and Processed Paper Results",
+  "description": "Experiment harness, validation tools, and compact processed result data for Exact Adaptive Hybrid Retrieval Without Fixed Top-L Cutoffs.",
+  "creators": [
+    {
+      "name": "Zhang, Chunran",
+      "affiliation": "Southwest Jiaotong University"
+    }
+  ],
+  "license": "Apache-2.0",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "information retrieval",
+    "hybrid retrieval",
+    "reciprocal rank fusion",
+    "exact top-k",
+    "reproducibility"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/ln-one/StratuMind",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

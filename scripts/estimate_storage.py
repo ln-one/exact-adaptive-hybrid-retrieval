@@ -27,7 +27,10 @@ def main() -> None:
     args = parser.parse_args()
     with args.config.open("rb") as handle:
         config = tomllib.load(handle)
-    root = args.root or Path(config["storage"]["default_root"])
+    configured_root = Path(config["storage"]["default_root"])
+    if not configured_root.is_absolute():
+        configured_root = args.config.resolve().parent / configured_root
+    root = (args.root or configured_root).resolve()
 
     regular = [
         spec
@@ -46,7 +49,10 @@ def main() -> None:
     )
     dense_e5 = e5_robustness_documents * 768 * 4
     archive_bytes = sum(spec.get("archive_bytes", 0) for spec in regular)
-    free = shutil.disk_usage(root.parent).free
+    disk_probe = root
+    while not disk_probe.exists():
+        disk_probe = disk_probe.parent
+    free = shutil.disk_usage(disk_probe).free
 
     print(f"BEIR-family documents: {regular_documents:,}")
     print(f"MS MARCO documents:     {msmarco_documents:,}")
@@ -67,4 +73,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

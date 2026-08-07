@@ -1,0 +1,1192 @@
+{
+  "access": "not redistributed in this package",
+  "access_reason": "Raw logs, indexes, model artifacts, and third-party corpora are excluded because of size and upstream redistribution terms. Relative logical paths and SHA-256 digests preserve the link to the frozen local evidence archive.",
+  "execution_provenance": [
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r1",
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1-eahr-depth/round-1/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r2",
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1-eahr-depth/round-2/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r3",
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1-eahr-depth/round-3/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r4",
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1-eahr-depth/round-4/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r5",
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1-eahr-depth/round-5/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r1",
+      "dirty": false,
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1/round-1/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r2",
+      "dirty": false,
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1/round-2/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r3",
+      "dirty": false,
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1/round-3/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r4",
+      "dirty": false,
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1/round-4/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "3c726e7875ba60eeb77dce87f348ea7ea9f9d476",
+      "dataset": "trec-covid-chrono-r5",
+      "dirty": false,
+      "runnerSourceSha256": "bcd310d1dd1e2a86ecd8e089512ededc69cb52460fa2135d6d3b2863bcaef8fb",
+      "source": "experiments/target-validity/chronological-v1/round-5/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "35d864b506b4a4763e690a14e9969c47519496be",
+      "dataset": "msmarco-passage-trec-dl-2019",
+      "dirty": false,
+      "runnerSourceSha256": "6070201f0215fa990e89eb2639bfc82e7394ace234bece6218579ddd8336c4e8",
+      "source": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2019/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "35d864b506b4a4763e690a14e9969c47519496be",
+      "dataset": "msmarco-passage-trec-dl-2020",
+      "dirty": false,
+      "runnerSourceSha256": "6070201f0215fa990e89eb2639bfc82e7394ace234bece6218579ddd8336c4e8",
+      "source": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2020/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "35d864b506b4a4763e690a14e9969c47519496be",
+      "dataset": "nfcorpus",
+      "dirty": false,
+      "runnerSourceSha256": "6070201f0215fa990e89eb2639bfc82e7394ace234bece6218579ddd8336c4e8",
+      "source": "experiments/target-validity/static-v3/nfcorpus/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "35d864b506b4a4763e690a14e9969c47519496be",
+      "dataset": "scifact",
+      "dirty": false,
+      "runnerSourceSha256": "6070201f0215fa990e89eb2639bfc82e7394ace234bece6218579ddd8336c4e8",
+      "source": "experiments/target-validity/static-v3/scifact/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "35d864b506b4a4763e690a14e9969c47519496be",
+      "dataset": "trec-covid",
+      "dirty": false,
+      "runnerSourceSha256": "6070201f0215fa990e89eb2639bfc82e7394ace234bece6218579ddd8336c4e8",
+      "source": "experiments/target-validity/static-v3/trec-covid/run.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "nfcorpus",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/nfcorpus-native-bulk-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "nfcorpus",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-same-producer-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/nfcorpus-same-producer-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "scifact",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/scifact-native-bulk-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "scifact",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-same-producer-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/scifact-same-producer-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "trec-covid",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/trec-covid-native-bulk-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "trec-covid",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-same-producer-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/final-small/trec-covid-same-producer-exhaustive-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "msmarco-passage-trec-dl-2019",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/msmarco-trec-dl-2019-native-bulk-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "dataset": "msmarco-passage-trec-dl-2020",
+      "dirty": false,
+      "experiment": "E2",
+      "method": "paired-ed-wrrf-vs-native-bulk-exhaustive",
+      "runnerSourceSha256": "31198e25da6c7570e9b5fff91b36c59da5daec2bbac14c4a0bf8b46d8d0ce039",
+      "source": "logs/e2/msmarco-trec-dl-2020-native-bulk-final-v1.jsonl",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "aggregateScriptSha256": "dddebcbbe9c54d94a173ce0f8559f3808d19138c5a5dc43607187f1ba1ae4679",
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "binarySha256": "28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "campaignDriverSha256": "14cbc9ac6cb6c06e97446c1c425ef8ab0cbe097839a9004e5693bd31f2841c29",
+      "dataset": "msmarco-passage-trec-dl-2020",
+      "dirty": true,
+      "experiment": "E5-v2",
+      "method": "counterbalanced-producer-ablation",
+      "publicationEligible": false,
+      "runnerSourceSha256": "3fbd9bfdbb93cf01043981eb7a505ac30a81d6731f6ed9e9782bf50ef77d3570",
+      "source": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/campaign.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "aggregateScriptSha256": "dddebcbbe9c54d94a173ce0f8559f3808d19138c5a5dc43607187f1ba1ae4679",
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "binarySha256": "28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "campaignDriverSha256": "14cbc9ac6cb6c06e97446c1c425ef8ab0cbe097839a9004e5693bd31f2841c29",
+      "dataset": "nfcorpus",
+      "dirty": true,
+      "experiment": "E5-v2",
+      "method": "counterbalanced-producer-ablation",
+      "publicationEligible": false,
+      "runnerSourceSha256": "3fbd9bfdbb93cf01043981eb7a505ac30a81d6731f6ed9e9782bf50ef77d3570",
+      "source": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/campaign.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "aggregateScriptSha256": "dddebcbbe9c54d94a173ce0f8559f3808d19138c5a5dc43607187f1ba1ae4679",
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "binarySha256": "28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "campaignDriverSha256": "14cbc9ac6cb6c06e97446c1c425ef8ab0cbe097839a9004e5693bd31f2841c29",
+      "dataset": "scifact",
+      "dirty": true,
+      "experiment": "E5-v2",
+      "method": "counterbalanced-producer-ablation",
+      "publicationEligible": false,
+      "runnerSourceSha256": "3fbd9bfdbb93cf01043981eb7a505ac30a81d6731f6ed9e9782bf50ef77d3570",
+      "source": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/campaign.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    },
+    {
+      "aggregateScriptSha256": "dddebcbbe9c54d94a173ce0f8559f3808d19138c5a5dc43607187f1ba1ae4679",
+      "benchCommit": "1be12357f6f2df6934020517235f4153ddcc5c9f",
+      "binarySha256": "28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "campaignDriverSha256": "14cbc9ac6cb6c06e97446c1c425ef8ab0cbe097839a9004e5693bd31f2841c29",
+      "dataset": "trec-covid",
+      "dirty": true,
+      "experiment": "E5-v2",
+      "method": "counterbalanced-producer-ablation",
+      "publicationEligible": false,
+      "runnerSourceSha256": "3fbd9bfdbb93cf01043981eb7a505ac30a81d6731f6ed9e9782bf50ef77d3570",
+      "source": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/campaign.json",
+      "systemArtifact": "sha256:28c352630bb6bad140a51fabc56e358da1c2e992b983152067843ba2823fe980",
+      "systemCommit": "70f4943d9604cd2b5fe2df60e93521015d87fa74"
+    }
+  ],
+  "files": [
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/4c188d6/E4-controlled.json",
+      "sha256": "4bbe6c1a60ac023e8ce972b6c18cbb287c49d251473667bfb24024734451963c"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/msmarco-trec-dl-2019-native-bulk-final-v1.aggregate.json",
+      "sha256": "6ba15e65f9ae747da5ad63f74cebd697601d5438de897a2b00e9e0358f853034"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/msmarco-trec-dl-2020-native-bulk-final-v1.aggregate.json",
+      "sha256": "956824cb34a1c332650c1b73fa6ee0292351c84fffd7557620b943709ee4cc69"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/nfcorpus-native-bulk-exhaustive-final-v1.json",
+      "sha256": "b562825c1b4bca1005fa4039a30710e8e5f48f2f4fc5363a0846815da5bd3578"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/nfcorpus-same-producer-exhaustive-final-v1.json",
+      "sha256": "f9a7b1e3c132fb03b934b60458ff54c5591c82f50d6453b3d8aa5ae922f51934"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/scifact-native-bulk-exhaustive-final-v1.json",
+      "sha256": "cc023d27c2b82fa43ad6ea4082cfd095f44fc48d7184cb0695e2a5eb5ff15ed6"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/scifact-same-producer-exhaustive-final-v1.json",
+      "sha256": "6d2e8b5221f7864a787eb097a3ea61b3b504859719714b174e16a065e95a6342"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/trec-covid-native-bulk-exhaustive-final-v1.json",
+      "sha256": "49e14874534e3dc59bfab273cc1bde1d1821b7df0dd53792cc7d5d1a73dc0b9a"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "aggregates/e2-final/trec-covid-same-producer-exhaustive-final-v1.json",
+      "sha256": "93005b3e463dfcedc9485bbf6471b183e51404e0efcf4592edd24ffdc3f3ae88"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/nfcorpus-native-bulk-exhaustive-final-v1.jsonl",
+      "sha256": "157795a1720604bf62664da17b08825161de709e12180cf06bcd7e9839c91460"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/nfcorpus-same-producer-exhaustive-final-v1.jsonl",
+      "sha256": "905561045163c9c72dbfb93da255eec96b71c352d8832ddf223dfa073a72bbea"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/scifact-native-bulk-exhaustive-final-v1.jsonl",
+      "sha256": "a16f733d1de23fe72298d1d389d9457728af6883374034720af3bbbb1d8967a6"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/scifact-same-producer-exhaustive-final-v1.jsonl",
+      "sha256": "459eb4e12f4a58e0ea9a91ec1865cc0d36da75d4cca01154c30d4e35940b7af5"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/trec-covid-native-bulk-exhaustive-final-v1.jsonl",
+      "sha256": "866c0a40a395cb407921669b7916c47a49aaa6594edf8d98d53afd555a29144a"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/final-small/trec-covid-same-producer-exhaustive-final-v1.jsonl",
+      "sha256": "e4b9707f2fe24a7e751799e2121a87b09840470c93bbc06df513ec9b6be0d0da"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/msmarco-trec-dl-2019-native-bulk-final-v1.jsonl",
+      "sha256": "3679debddf2f37bc8cc4fd79d990cd94ce3a70122e7a68376d754b9ead8377ba"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "logs/e2/msmarco-trec-dl-2020-native-bulk-final-v1.jsonl",
+      "sha256": "1a4adca03996fc83fcf4173dada618513c07fea7d75742d0ef62de2950250a51"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "results/canonical-v1/aggregates/2ae08eb/E3-nfcorpus-fixed-prefix.json",
+      "sha256": "4fab4bbbd4666ac8bf288c0a262ba6a9f6afbf48b1ae9dec2aa7e8bc2462fbd8"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "results/canonical-v1/aggregates/2ae08eb/E3-scifact-fixed-prefix.json",
+      "sha256": "81b1aff8464db90f2c279d42e95fc8c09b1ab5193013b9882690d8944d415456"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "results/canonical-v1/aggregates/2ae08eb/E3-trec-covid-fixed-prefix.json",
+      "sha256": "516d101a446e4f557ab493f332daed765d44567baad5e35b575d4809c8dee7a6"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/aggregate.json",
+      "sha256": "d2c7b17dbc41558dc8dee31bb0705cf47b50d1cf882cd72d5d96aabdeec5bb2b"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/aggregate.json",
+      "sha256": "ea38899dd16d8a4ccf9b8af9d7bb076d64b054dfeef2adb1bace4708252df941"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/aggregate.json",
+      "sha256": "d56cb2e334a7bd387db57ef05917554d01c657f6ccf60623f2587b9f8884a67b"
+    },
+    {
+      "family": "canonical-run-evidence",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/aggregate.json",
+      "sha256": "7cdf3d45359e77f578050a3dee15083e2f42dd800df3214536fe0b4f72b131e4"
+    },
+    {
+      "family": "chronological-eahr-depth",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth-aggregate/aggregate.json",
+      "sha256": "795e6e974200d5c4d07ef0a8ba9ae5ab7b00b1f4b8090f87014cd1b355687a01"
+    },
+    {
+      "family": "chronological-eahr-depth",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth-aggregate/manifest.json",
+      "sha256": "c7de47ae4673228c53774e5ad016a3cc924009c3404064eca055650a8966d4f9"
+    },
+    {
+      "family": "chronological-eahr-depth",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth-aggregate/per-query.csv",
+      "sha256": "50e8debfaec7c1f4fe332f84674b5d4972eee9083c7da639f2182f7d09abc07a"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-1/manifest.json",
+      "sha256": "c7df408108228cd86c5ee5c2e3c9ccc30d4cc89310ae6f2d4b15580c2b4bf302"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-1/run.json",
+      "sha256": "aa54efba252247f6eb471ff4c32d6c1497a1147a69643ae46d6c95a099d20b5c"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-1/summary.json",
+      "sha256": "699fedbbda3aafaad17b5029b68dfcd5d16922ad925bc5afac05c82ba7a5d828"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-2/manifest.json",
+      "sha256": "84a132063cce9a5ce33607d5855641ce5fb60cb44228840d0b8dca69b27b5b50"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-2/run.json",
+      "sha256": "879fc84710372bca92bbd5a6891e833203feb8695af134ae946d6b05421d8449"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-2/summary.json",
+      "sha256": "67395bc2b94d307cba1c9d539a71f5c1777bd956722b74563f6341a519576625"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-3/manifest.json",
+      "sha256": "6da16b7335d9bf71484a06ed571212377c7cdc9c472752b30cae46f14e764628"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-3/run.json",
+      "sha256": "e3e8ceb54e878e5378ab841f7693bfe679a2adc489fafa78a8ff523d8762ab1b"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-3/summary.json",
+      "sha256": "eb42b16150d744e57f99d6ac48fe7d78a2e934bcd4718c86bb4824e5722f353b"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-4/manifest.json",
+      "sha256": "b25f34f08866a48ff1583dcc36b0428a9820553251f75395fac6a71d44f55092"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-4/run.json",
+      "sha256": "4691f38a04c19dc72e0c2d84cf32d000687ff95dc6899b27695d5eaeff17b3d1"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-4/summary.json",
+      "sha256": "e6ad3369b3022f6e9d5db4e306b181011e3221cb8323b18f11aeec716368d23f"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-5/manifest.json",
+      "sha256": "a12858c673b05f3332ad52d6621560d80241f0e711abdbe99cf24daee0c09c78"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-5/run.json",
+      "sha256": "b8b3624422c85bb3900fc95296a607d1e4202e12152df50762448de8a07b48e6"
+    },
+    {
+      "family": "chronological-eahr-depth-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1-eahr-depth/round-5/summary.json",
+      "sha256": "19c63e02c1ca3f4dcadd2ab32b555d7ff674e557994d8892b262ce4cf98e103b"
+    },
+    {
+      "family": "chronological-target-validity",
+      "relative_path": "experiments/target-validity/chronological-v1-aggregate/aggregate.json",
+      "sha256": "a63e96561f9406139f790315b8a95cb956e3a22668a6c9160838360b44fec4ef"
+    },
+    {
+      "family": "chronological-target-validity",
+      "relative_path": "experiments/target-validity/chronological-v1-aggregate/manifest.json",
+      "sha256": "8e3341feef5e32669eac43959757b1e5cd9f8d1c26121ba37ba2e23074a91fe7"
+    },
+    {
+      "family": "chronological-target-validity",
+      "relative_path": "experiments/target-validity/chronological-v1-aggregate/per-query.csv",
+      "sha256": "3de20b7144954bfd036b370b0ac680760228cb718136ca78ccce09197b819436"
+    },
+    {
+      "family": "chronological-target-validity-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1/round-1/manifest.json",
+      "sha256": "a6ad55ef8f2ce2a36076cd2da1ee93fa7200476cbee95ee7903d3d7f08be0359"
+    },
+    {
+      "family": "chronological-target-validity-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1/round-1/run.json",
+      "sha256": "93f278f31caca2fc2c855674e91990c8e0c85e245a2b96fc9681743e2633514f"
+    },
+    {
+      "family": "chronological-target-validity-run:R1",
+      "relative_path": "experiments/target-validity/chronological-v1/round-1/summary.json",
+      "sha256": "d5fb3a74601be379e214d04c15212d7aeba6acfe5718ee84b71e2d304b98cdfd"
+    },
+    {
+      "family": "chronological-target-validity-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1/round-2/manifest.json",
+      "sha256": "6d456214916ec400e4fbb8093f2e7bcb7f60c5169d422fae1d7407f2b2929090"
+    },
+    {
+      "family": "chronological-target-validity-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1/round-2/run.json",
+      "sha256": "c120f4ca00cc5753451346dbe6575b1ffdaad61507e72022b75c37e2e17315ac"
+    },
+    {
+      "family": "chronological-target-validity-run:R2",
+      "relative_path": "experiments/target-validity/chronological-v1/round-2/summary.json",
+      "sha256": "029acc6efe557d02105e31e02c0e205e043ad565fddb41c2cc2923c938e30964"
+    },
+    {
+      "family": "chronological-target-validity-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1/round-3/manifest.json",
+      "sha256": "8e406700534f57c7c45df9663d92d91d3f192146bf2165e044ed4494cb1ae19e"
+    },
+    {
+      "family": "chronological-target-validity-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1/round-3/run.json",
+      "sha256": "2e2e73b5283c0ecaa948d654ba8ac1388fca54a94c6f6af1d64eea8e5fb87d3b"
+    },
+    {
+      "family": "chronological-target-validity-run:R3",
+      "relative_path": "experiments/target-validity/chronological-v1/round-3/summary.json",
+      "sha256": "61dade58e8d408b4d602e9feab41fe3d8569ab9caa14c74ea6de39c1c505c15a"
+    },
+    {
+      "family": "chronological-target-validity-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1/round-4/manifest.json",
+      "sha256": "e6696391028eea2934c633adef6e5f56899f425563248c74e7884ed342ee68b2"
+    },
+    {
+      "family": "chronological-target-validity-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1/round-4/run.json",
+      "sha256": "ccce2af7d9f1b19acb956965cafc35d1a81d1c55a1ec06f4cf2752b7ec726de6"
+    },
+    {
+      "family": "chronological-target-validity-run:R4",
+      "relative_path": "experiments/target-validity/chronological-v1/round-4/summary.json",
+      "sha256": "2ad76d38fc10b9e2a463f2b6ab30cf3eb0fb11f559e1b50e3b93f8b624fc730a"
+    },
+    {
+      "family": "chronological-target-validity-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1/round-5/manifest.json",
+      "sha256": "6f8f7e9f65e6c5eb20e7e45ec8fa2bff3e1f6ce6378f57c285b6b29b1fd10d09"
+    },
+    {
+      "family": "chronological-target-validity-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1/round-5/run.json",
+      "sha256": "145a0f3dbfdb1bb19e0b20a32ac0a9f413d6d14fc3c5848066ba819ff5ddd88f"
+    },
+    {
+      "family": "chronological-target-validity-run:R5",
+      "relative_path": "experiments/target-validity/chronological-v1/round-5/summary.json",
+      "sha256": "d5fa9fc93a7be1e20032c3757fc19ee4f815429d5c38b7f16bce43095f39b274"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/campaign.json",
+      "sha256": "6f10ec1044320d2902212378bf9dd4abb2ad6ea0570200a2350affa4ed80965a"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s01.jsonl",
+      "sha256": "5aaf1fc6b47c501e123564b0bb293c16e797e80b66172362d381ba64e45f9ffe"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s02.jsonl",
+      "sha256": "325e41d755f1c9142d90973adcccdf73f37f49bef411045e60e93d82e05fcc22"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s03.jsonl",
+      "sha256": "ad210c25367af2aafbb26ec85638f15e6d7ba0520864ede499f6fe34e12f793c"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s04.jsonl",
+      "sha256": "44f6373dddc8084946476638e1b304cc4b725e91b11d2a40b65040bc001bee1c"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s05.jsonl",
+      "sha256": "a9fa65a00ecbaa0818a16ae9a72b0836dff1d43223318c5366c4fe3a97a86eef"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r01-s06.jsonl",
+      "sha256": "06a6e5050eae37dc226c3f633cf2328b1c906272300cbf761fe3dced1c563e71"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s01.jsonl",
+      "sha256": "b2797117c993fa19ecf2eff5f2bd69d0f9bcf54d9f5cba54920eca45fc9aca6d"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s02.jsonl",
+      "sha256": "c1397dce7fea72c2be01702638ee542dadb0cda4ef4667e5aa6cb3aa13e34e23"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s03.jsonl",
+      "sha256": "be523cf17d5d63ded0d7b4dfcf438b5e77f51053e002319cc8a84aca5198583e"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s04.jsonl",
+      "sha256": "bb252f74388313235599de45a7b0235c92ded6e7bc0598bd3fab0756811184e2"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s05.jsonl",
+      "sha256": "22a73785e77277b5331a98e5fc24d6e08759cf859473ee69de2b6e9c0516bc81"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r02-s06.jsonl",
+      "sha256": "b518be4ebb48981fbd0def15c2fa851f00956cd5987f93257bfadbf8cd5c2395"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s01.jsonl",
+      "sha256": "22987468770e87890957f576ba73cb77284ee1e7689ee0123954f8dc5dc105f7"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s02.jsonl",
+      "sha256": "6dffa6ec0ea89450d4ab99625d6034d87d9048d04f148342d52fb1b9da369be4"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s03.jsonl",
+      "sha256": "3d912c31f2210d3211ce3ae2e2d036defc9bb57888103841b37caf5a7514bfea"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s04.jsonl",
+      "sha256": "3f4c69d1202ccdbbc0ee5ebabb94aaacaa0a184dc93f97205acd3611bf5a435d"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s05.jsonl",
+      "sha256": "224f6b9459d4df32e64d1ea5a9ca973df80a814a756c51a3e7bcb75a4e4b90f0"
+    },
+    {
+      "family": "rank-generator-ablation:msmarco-passage-trec-dl-2020",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/msmarco-passage-trec-dl-2020/shards/r03-s06.jsonl",
+      "sha256": "c0a916c5b6a4fee6a71b88a56fbda1f1aabb5b4a73443c61cbb92baffa66d360"
+    },
+    {
+      "family": "rank-generator-ablation:nfcorpus",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/campaign.json",
+      "sha256": "b19ee9c35c65b32f2d19e87d60b17c861538229f668ef6dc08c8d6111f5d0fd6"
+    },
+    {
+      "family": "rank-generator-ablation:nfcorpus",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/shards/r01-s01.jsonl",
+      "sha256": "93ebadfc84c414afe4a97b259714e4fbf75bac526219bf9a1f222a8bc696f981"
+    },
+    {
+      "family": "rank-generator-ablation:nfcorpus",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/shards/r02-s01.jsonl",
+      "sha256": "701511164bf73eb127dbec05200a3367eb55420764b102b65cbd690d1b3e8158"
+    },
+    {
+      "family": "rank-generator-ablation:nfcorpus",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/nfcorpus/shards/r03-s01.jsonl",
+      "sha256": "e835fa4b972c0c00cd87ac841cdb133ac31b82bb53bf070705d504c29c731172"
+    },
+    {
+      "family": "rank-generator-ablation:scifact",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/campaign.json",
+      "sha256": "94c2ee2effa088b86898da60c7a1607bc2f68e26c661c2552bb3543a7de24c5e"
+    },
+    {
+      "family": "rank-generator-ablation:scifact",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/shards/r01-s01.jsonl",
+      "sha256": "c3603f5ab7dba3e8c12118e1857a4f81ebe5e323ff10013a88d8bfd923ee4e0e"
+    },
+    {
+      "family": "rank-generator-ablation:scifact",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/shards/r02-s01.jsonl",
+      "sha256": "06bc533309feae974ffbd99f33c0ccedeac6078e4aa0826eefd30d43655184dc"
+    },
+    {
+      "family": "rank-generator-ablation:scifact",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/scifact/shards/r03-s01.jsonl",
+      "sha256": "733ac4a8ada9ef8e07214faa57e049a782259e991eb8351970d6aa4461230235"
+    },
+    {
+      "family": "rank-generator-ablation:trec-covid",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/campaign.json",
+      "sha256": "69a26d3b109a081da43a607b63a8a4324f135a4c7d3f38450dd741dc85dd021f"
+    },
+    {
+      "family": "rank-generator-ablation:trec-covid",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/shards/r01-s01.jsonl",
+      "sha256": "641e5fc584ed781f806901eecade4fca527f39125d3dcb00a59d297e180accad"
+    },
+    {
+      "family": "rank-generator-ablation:trec-covid",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/shards/r02-s01.jsonl",
+      "sha256": "b8993ae7410926011ab04acd3fc1dc5531f4c225c27f70cc35b704ed01929213"
+    },
+    {
+      "family": "rank-generator-ablation:trec-covid",
+      "relative_path": "runs/e5-v2-counterbalanced-full-coverage-20260803/trec-covid/shards/r03-s01.jsonl",
+      "sha256": "68e01bb3d3c16bb9eaa54df34333173f44fee2ae661b80300c3ef4bab619786e"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2019/manifest.json",
+      "sha256": "10fc5bdf1e04a3c30930487d06bf0ee5856ee0de96e6715da329d9ef283038dd"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2019/run.json",
+      "sha256": "2856a650b6a366aceab18ab3b60beb463bb395bc96567b01375b797b187fa7bf"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2019/summary.json",
+      "sha256": "81444d4bb5c3f34d426fd7ca0aefc6e67085c87018bd8c6e3f336b557c125964"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2020/manifest.json",
+      "sha256": "823341507eaeba69eea93a16fd76eeee7ca5a31fda684946594b5157d37daab2"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2020/run.json",
+      "sha256": "9174b804f3fd31a65019b8805e70f2cad46c4d721919467d950b85237975a7b7"
+    },
+    {
+      "family": "target-validity-run:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3/msmarco-passage-trec-dl-2020/summary.json",
+      "sha256": "7ea0016f30e3b8449445282620873876e00abd89477fc822d75710b4188d3d6d"
+    },
+    {
+      "family": "target-validity-run:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3/nfcorpus/manifest.json",
+      "sha256": "a2a215102b17d15ba3f784a760d53c1303b91440c5341512dbccc38f21dd45a9"
+    },
+    {
+      "family": "target-validity-run:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3/nfcorpus/run.json",
+      "sha256": "54230d9df1242cd3f5529de36c66e5699517ab8ebf6bf101b2368d626a805740"
+    },
+    {
+      "family": "target-validity-run:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3/nfcorpus/summary.json",
+      "sha256": "4e174b0c64beabf3cf8a810b8a29fb0432ab72f6930ae97e32b41e233ec3d6e7"
+    },
+    {
+      "family": "target-validity-run:scifact",
+      "relative_path": "experiments/target-validity/static-v3/scifact/manifest.json",
+      "sha256": "37103e67df8b5938da9f60bb0a0a8f7066b03c6941e23e950f28014800cb02b1"
+    },
+    {
+      "family": "target-validity-run:scifact",
+      "relative_path": "experiments/target-validity/static-v3/scifact/run.json",
+      "sha256": "ebdd76cc1854995612eecb154d63705ee70cb5622a0fada2f802ec11c4e7ce0f"
+    },
+    {
+      "family": "target-validity-run:scifact",
+      "relative_path": "experiments/target-validity/static-v3/scifact/summary.json",
+      "sha256": "1db2ad098b8a350baf3bee046078821ebad3a5f4875c05bc3e726b773d16c7de"
+    },
+    {
+      "family": "target-validity-run:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3/trec-covid/manifest.json",
+      "sha256": "6957d1c43f601a1f4d7a2a9c1005839c9c4cfe16634d864947eddb7f14ce4d43"
+    },
+    {
+      "family": "target-validity-run:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3/trec-covid/run.json",
+      "sha256": "007a55a66829d98f2a5f3a42fdf3401d43410930de057810ce0d64645c6a21e7"
+    },
+    {
+      "family": "target-validity-run:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3/trec-covid/summary.json",
+      "sha256": "c13b4dc30088161c9dc3a7dd90eec7bdf760464f3516537cd166333815a8f4c7"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/aggregate.json",
+      "sha256": "86c5b9477db775c57ac001fbadc0c84f78d4f7b27cb4571f124b5554e034f678"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/manifest.json",
+      "sha256": "a133110055f2f7588ad6d99ae125f540a69324e610ba34758e4efe2589983b47"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/per-query.csv",
+      "sha256": "66fd775bfb1c7f4222eb0f2d7beddd7b1c47f184dda4b181d0215443b21a9cef"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/dense.run",
+      "sha256": "06ba1654c9340db88dad710c5c243f361d4c5910e3747ef447cdee6ab10f8442"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L10.run",
+      "sha256": "88cba731481723e01a427197aead1834d8550dcb677eeec9b373b73d67105a0b"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L100.run",
+      "sha256": "9f7cde78183d7fb47454dec5ad9a69f1f4f406224e83077e3b0f1687dc28006c"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L1000.run",
+      "sha256": "11fc35ab7596a3dd8d6a521fd052179008697dbf6a8e759d84cbacfa506dcbd9"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L20.run",
+      "sha256": "0a3f4417dc1f734db072add3884daddbd8ee9c1952ea9099fba9f0aeb615b1b0"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L200.run",
+      "sha256": "029f04bf41cd33bc4fcd7dcf6169232f8d0fdc899742eb6c1faeebf0ae277b14"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L2000.run",
+      "sha256": "eac52ee2ce6b1c27c54561196ed68bfe29b46cac6f52a201c876572edb94e698"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L50.run",
+      "sha256": "3bc6bca906ea8ceb6518ebf3cde55b5794d0b402515785cd084cb0ed13b16381"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L500.run",
+      "sha256": "8a971c801184cb0fea34f04e4076b523f194a82b4cbe05a3b85dbbbf2961a480"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/fixed-L5000.run",
+      "sha256": "e5e2dfa296a3714883d680a8d9ff14d2f6e07893cb53f2e045262882007086fb"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/full-wrrf.run",
+      "sha256": "932ea61f3a6c6b8a3f8e1baf43d79fd7374b120e495cc55e335475409edf165b"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2019",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2019/runs/sparse.run",
+      "sha256": "b6b80e054092eff636d4b3c8a5b1acb93c71bf2f3b0728d69c8bc332946d384b"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/aggregate.json",
+      "sha256": "6b3ab93491cb8288082c32b27161bfdfd906e3a364464e089332f498c284bd63"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/manifest.json",
+      "sha256": "7ccc9bd8911a59c2be899a5e43caac2d084ea7fc6a7d8e45cba8a022b8ac2dea"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/per-query.csv",
+      "sha256": "5702153c2534bc627281632ff7f16c12a7e89f2bb99dc1a8e56e619341331472"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/dense.run",
+      "sha256": "0ca0a97ebb70c06b5c82b2aa836087c2203414afda95b9ba58d3c33a32fd3efc"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L10.run",
+      "sha256": "9c54b429c46cc3ffd063a24c35afef11e56552b6019acf4cae6f3b5a537b9465"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L100.run",
+      "sha256": "2f1ca9e0067aa3427f5f506bd8b41daa68217b7be8e3a9c9cbc15dce67bfabfa"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L1000.run",
+      "sha256": "31f305cbf51a885606f5d7059be212597d0b04bfa3f09bfaa5ed043df597b5eb"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L20.run",
+      "sha256": "e8538d61b42bda9ab7011305a0d5d7159f32a714a45a92bb703afea02e86e1b6"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L200.run",
+      "sha256": "5f69e8a1e1bd199a89c75f37ae9bde411300e74dfe44bca97b308711d85cbde3"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L2000.run",
+      "sha256": "7f90da407446d6e8bac691e1f0bb78688c3d5c1d67447f8eaf73feefad658467"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L50.run",
+      "sha256": "d28a4f18435f917dcdc35bad7ab52bdc54c9f88fdb64c257794d3042b6907897"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L500.run",
+      "sha256": "c6a9f4b05c71d46acd1a732f7dc6c8287bf95f5e1af1126fbe3948a69934ae81"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/fixed-L5000.run",
+      "sha256": "d5fbc91151156c669259b74236ae5026a6ed20936039a7be9432f3b5d3d25c88"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/full-wrrf.run",
+      "sha256": "f933c0a84c57213c375333192826fa61f231f2fd0d84228d1f191fa89808e0b7"
+    },
+    {
+      "family": "target-validity:msmarco-passage-trec-dl-2020",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/msmarco-passage-trec-dl-2020/runs/sparse.run",
+      "sha256": "2f8bba0776bd220c2beb1461aadf69de17cf645cdc2039fb83df019c17c6b612"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/aggregate.json",
+      "sha256": "88b09d6eb8de130805a0ca25629f629aa17872f9c545c808461124594686e32b"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/manifest.json",
+      "sha256": "e4c3b65dc89f3c5739e57270f7d58088bfd5e3e8f297faf27f3e2f5f81216e82"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/per-query.csv",
+      "sha256": "f6c1c24e37ebb624e0408244ffa65cabe761fb18d227a52251c4d497a6f9d3f0"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/dense.run",
+      "sha256": "1da4fadc77fcb968cb80b6bfba85688147ce7ca1a38d59a0bb3497bdc12efc88"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L10.run",
+      "sha256": "0f521312fe7c6e2e87355eed436b7319ac90f8dd32725ff27f930f4aad9db66a"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L100.run",
+      "sha256": "473748618f2b32df3f4b6f9125a3f549072a668793f4a31df7107d271e0f8ae2"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L1000.run",
+      "sha256": "4e7f5468156eed0817eba37a2b0185b25a7ec32ef1a11953b247def617661615"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L20.run",
+      "sha256": "145ea10c7f0196bd4cc1f6be8cacd47d10718e4e0f677358e1506ceab4c0215f"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L200.run",
+      "sha256": "f4964748231349db700be05f8ebcd7266da42f6f7fc5abb068a0ef8eec4a1207"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L2000.run",
+      "sha256": "2585cce379e32a8cd8b1b16245e046e8b4c5a0df1b4819659b0d86cff992a695"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L50.run",
+      "sha256": "f974729f465910c5b99dab858cda2aa953173101482c5f898a4a2a91f6ce6b89"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L500.run",
+      "sha256": "ba25cfc36af891396db0a7acf8dd56dd5e6337a5f15c057263ac9c9f63caf9c6"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/fixed-L5000.run",
+      "sha256": "6c268a5bd29f2c8af3fbdde6fe94d2fd717e70ae71291a787cffbf74a4dd692f"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/full-wrrf.run",
+      "sha256": "d59fc3cff46fbcf2007131bebbcebbb1c79b72e51ca235b0ae8b1be11cd61f81"
+    },
+    {
+      "family": "target-validity:nfcorpus",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/nfcorpus/runs/sparse.run",
+      "sha256": "b72d9552dbb2c862a2eb578ed964e0da0ce331507e34f63c73faa8e53be2e3d9"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/aggregate.json",
+      "sha256": "f319018e85013dc6a333d4a5038af6bd88d5473be3872a3609658ff09b8a497f"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/manifest.json",
+      "sha256": "6e19d0ce0ce8c888f430abf9ae5d0531f9b7cdaf4e8042a145f2e4aa3b519b4b"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/per-query.csv",
+      "sha256": "e483f9c88439b187af323f4727ee31c92e5c0dbd0bb6546b1caba7cb490ae5a2"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/dense.run",
+      "sha256": "0e3f36c590f55d14295d766d4f1a6b7d2ebfac81dd5b53e1e5e916db3be0bfc9"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L10.run",
+      "sha256": "4dd6060129fb3ee0f6f21478b77f88fc17917b6f4a1cbe8222ee60dc46e9db87"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L100.run",
+      "sha256": "d6b7902a039db4356dd72518c8fb5f08e7aa54ca048e7e55ef67f240c5e769be"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L1000.run",
+      "sha256": "d6a691f3a640fecb8a145a3097808da235dcb752a4309f5072383c1e5fa83746"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L20.run",
+      "sha256": "5d4321c42bf9bc8a9534e3bad8b159b1b4ebae22dbe5e0202ef5881dad57cff9"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L200.run",
+      "sha256": "efd19650b34a22a681c059f39af40da5b14cd9366cf6ee9452a5769ff560a7fe"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L2000.run",
+      "sha256": "5d6aa6ee4a2895d54b486414122ee24375ecc0a92712b4481c08e470cacd1674"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L50.run",
+      "sha256": "adbd4f23745dc650d92e74511aec2df652e2ec42e3e6f3fe7bc8d84a3280f02b"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L500.run",
+      "sha256": "6f03a37f8ec2cb0c489891910ee3237e3b4006341eece5901e5ecd5d9f518a0b"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/fixed-L5000.run",
+      "sha256": "c75f5b5240d390504292f5a1be4cb1078451ef9fa87ffd7e56f71172a65a969f"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/full-wrrf.run",
+      "sha256": "d0e7f56078b49041a803fd2c8c8af837e3d57dd5ae6ca07a642749c76e37ed0e"
+    },
+    {
+      "family": "target-validity:scifact",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/scifact/runs/sparse.run",
+      "sha256": "3b2f0753f9794cd4d2361a019363a6b16619628f85e6e3179fcc7c691418f52c"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/aggregate.json",
+      "sha256": "870f4fb5fed0817b8acb598244b502e4a5180d5c467d1c4bec867125b7f04782"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/manifest.json",
+      "sha256": "d905548f09dc264635b52f4ae48fe68c4c7a9233df1b086afc61df223bca8f5f"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/per-query.csv",
+      "sha256": "ccad0cbeb0064c877d6e0b2c14397446861d58d5d0bd06b0f5ecbd8f63f9290c"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/dense.run",
+      "sha256": "002210ceda8833c10ab709291c05af199293d5cafc70fb31f8463a8534f66546"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L10.run",
+      "sha256": "670637c79fd2218f03c60da5ef68683a54e6007867752b7bf4126c2bba1de9d9"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L100.run",
+      "sha256": "69fa7d0f6f87d432a3ab96e39648e1433c101ce412704d4747df2ddf587361b8"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L1000.run",
+      "sha256": "766c4ae1ad53fec5870f68673e9c9443b3cdee3f56717b8989d6715618fce51a"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L20.run",
+      "sha256": "deb14af435ca0729575974e1ca81972c342a7581e2566a86a2ddfcdf75526198"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L200.run",
+      "sha256": "704bfa361d545052da69ecd5edeadc1649086e01269521e60b4fa3bf684e1572"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L2000.run",
+      "sha256": "14a2fadbd756cc78539364af9870e230fbfa95462fdbf087865ce14df09da5d1"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L50.run",
+      "sha256": "de7762686ee0f97336e9a05ca018e5b37b7c75f91a04c0c42a24d924c82bd670"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L500.run",
+      "sha256": "a65b90fc836d6b7daa8f0349112ed0a6525b604554fa42ee3972a605d5c896df"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/fixed-L5000.run",
+      "sha256": "617d7db21d2b89415e801e4bdf24269fd0bfdbf356b002f18d8b5b67153f3a49"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/full-wrrf.run",
+      "sha256": "3ba2e58e9b7a06634ff48446fdd8f09d3b2140fad2f1fcd009137e13e3fa8d3f"
+    },
+    {
+      "family": "target-validity:trec-covid",
+      "relative_path": "experiments/target-validity/static-v3-aggregate/trec-covid/runs/sparse.run",
+      "sha256": "3cb20241ca41bdc2c7050349df5c9b2ba63e47ffa92bb55b705f5e5731e0da12"
+    }
+  ],
+  "schema": "eahr-public-source-evidence-v1"
+}

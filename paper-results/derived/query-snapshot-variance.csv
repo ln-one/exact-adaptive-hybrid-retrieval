@@ -1,0 +1,3 @@
+channel,metric,transform,observations,queries,snapshots,query_share,snapshot_share,query_snapshot_interaction_share,source_sha256
+Dense,read_ratio,log10,150,30,5,0.75214607589934546,0.013415839625624619,0.23443808447502987,50e8debfaec7c1f4fe332f84674b5d4972eee9083c7da639f2182f7d09abc07a
+Sparse,read_ratio,log10,150,30,5,0.76891861671108752,0.025367623296315474,0.205713759992597,50e8debfaec7c1f4fe332f84674b5d4972eee9083c7da639f2182f7d09abc07a
