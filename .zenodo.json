@@ -1,5 +1,5 @@
 {
-  "title": "EAHR Bench: Reproducible Experiments and Processed Paper Results",
+  "title": "Exact Adaptive Hybrid Retrieval: Code and Reproducibility Artifacts",
   "description": "Experiment harness, validation tools, and compact processed result data for Exact Adaptive Hybrid Retrieval Without Fixed Top-L Cutoffs.",
   "creators": [
     {
@@ -18,6 +18,12 @@
     "reproducibility"
   ],
   "related_identifiers": [
+    {
+      "identifier": "10.48550/arXiv.2608.07152",
+      "relation": "isDocumentedBy",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    },
     {
       "identifier": "https://github.com/ln-one/StratuMind",
       "relation": "isSupplementTo",

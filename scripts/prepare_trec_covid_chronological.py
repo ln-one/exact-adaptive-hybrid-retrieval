@@ -50,7 +50,9 @@ def fetch(url: str, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".part")
     temporary.unlink(missing_ok=True)
-    request = urllib.request.Request(url, headers={"User-Agent": "stratumind-bench/0.1"})
+    request = urllib.request.Request(
+        url, headers={"User-Agent": "exact-adaptive-hybrid-retrieval/0.1"}
+    )
     with (
         urllib.request.urlopen(request, timeout=300) as response,
         temporary.open("xb") as output,

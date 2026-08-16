@@ -753,6 +753,35 @@ wheels = [
 ]
 
 [[package]]
+name = "exact-adaptive-hybrid-retrieval"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "dvc" },
+    { name = "httpx" },
+    { name = "huggingface-hub" },
+    { name = "ir-datasets" },
+    { name = "ir-measures" },
+    { name = "numpy" },
+    { name = "pyarrow" },
+    { name = "sentence-transformers" },
+    { name = "zstandard" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dvc", specifier = "==3.63.0" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "huggingface-hub", specifier = "==0.34.4" },
+    { name = "ir-datasets", specifier = "==0.5.11" },
+    { name = "ir-measures", specifier = "==0.4.3" },
+    { name = "numpy", specifier = "==2.3.2" },
+    { name = "pyarrow", specifier = "==21.0.0" },
+    { name = "sentence-transformers", specifier = "==5.1.0" },
+    { name = "zstandard", specifier = "==0.23.0" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.32.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2632,35 +2661,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8a/e6/f3832264bcd98b9e71c93c579ab6b39eb1db659cab305e59f8f7c1adc777/sqltrie-0.11.2.tar.gz", hash = "sha256:4df47089b3abfe347bcf81044e633b8c7737ebda4ce1fec8b636a85954ac36da", size = 23551, upload-time = "2025-02-19T15:11:35.474Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0a/a7/96dd20ed6c4008ca57aa14bd89588eff1dfc163f45067cf715df290dc211/sqltrie-0.11.2-py3-none-any.whl", hash = "sha256:4afb1390bbe8a6900a53709b76213a436fbaf352de0b99ba9b0d395d4a0ca6b6", size = 17140, upload-time = "2025-02-19T15:11:34.044Z" },
-]
-
-[[package]]
-name = "stratumind-bench"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "dvc" },
-    { name = "httpx" },
-    { name = "huggingface-hub" },
-    { name = "ir-datasets" },
-    { name = "ir-measures" },
-    { name = "numpy" },
-    { name = "pyarrow" },
-    { name = "sentence-transformers" },
-    { name = "zstandard" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "dvc", specifier = "==3.63.0" },
-    { name = "httpx", specifier = "==0.28.1" },
-    { name = "huggingface-hub", specifier = "==0.34.4" },
-    { name = "ir-datasets", specifier = "==0.5.11" },
-    { name = "ir-measures", specifier = "==0.4.3" },
-    { name = "numpy", specifier = "==2.3.2" },
-    { name = "pyarrow", specifier = "==21.0.0" },
-    { name = "sentence-transformers", specifier = "==5.1.0" },
-    { name = "zstandard", specifier = "==0.23.0" },
 ]
 
 [[package]]

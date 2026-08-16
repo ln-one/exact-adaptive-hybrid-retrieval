@@ -1,7 +1,15 @@
-# EAHR Bench
+# Exact Adaptive Hybrid Retrieval (EAHR)
 
-Reproducible experiments and processed result data for **Exact Adaptive Hybrid
-Retrieval Without Fixed Top-L Cutoffs**.
+[![Paper DOI](https://img.shields.io/badge/DOI-10.48550%2FarXiv.2608.07152-blue)](https://doi.org/10.48550/arXiv.2608.07152)
+[![Verify public evidence](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/ci.yml/badge.svg)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/ln-one/exact-adaptive-hybrid-retrieval)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/releases)
+[![License](https://img.shields.io/github/license/ln-one/exact-adaptive-hybrid-retrieval)](LICENSE)
+
+Code, reproducible experiments, and processed result data for **Exact Adaptive
+Hybrid Retrieval Without Fixed Top-L Cutoffs**.
+
+Paper: [arXiv:2608.07152](https://arxiv.org/abs/2608.07152) ·
+[DOI: 10.48550/arXiv.2608.07152](https://doi.org/10.48550/arXiv.2608.07152)
 
 This repository keeps three concerns separate: licensed upstream inputs,
 executable experiments, and the compact evidence that readers can inspect
@@ -166,3 +174,6 @@ Harness code is licensed under Apache-2.0. Author-generated processed data in
 third-party corpora, models, or other upstream artifacts. See
 [`paper-results/LICENSE.md`](paper-results/LICENSE.md) and
 [`CITATION.cff`](CITATION.cff).
+
+The DOI above identifies the paper. A separate DOI for a frozen software and
+processed-data release will be added after the GitHub release is archived.

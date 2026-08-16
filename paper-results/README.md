@@ -33,9 +33,11 @@ maintainer with the frozen canonical archive can audit every derived row.
 
 The experiment harness is in this repository. The corresponding retrieval
 implementation is maintained in
-[StratuMind](https://github.com/ln-one/StratuMind). A final archival data record
-and persistent identifier have not yet been assigned; do not describe this
-directory as a DOI-backed deposit until that record exists.
+[StratuMind](https://github.com/ln-one/StratuMind). The paper is identified by
+[DOI: 10.48550/arXiv.2608.07152](https://doi.org/10.48550/arXiv.2608.07152).
+A separate archival DOI has not yet been assigned to this software and
+processed-data package; do not describe this directory as a DOI-backed deposit
+until that record exists.
 
 ## Data Availability
 

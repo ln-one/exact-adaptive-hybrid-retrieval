@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this experiment harness, please cite the EAHR paper."
-title: "EAHR Bench"
+title: "Exact Adaptive Hybrid Retrieval: Code and Reproducibility Artifacts"
 type: software
 authors:
   - family-names: Zhang
@@ -8,8 +8,8 @@ authors:
 version: 0.1.0
 date-released: 2026-08-08
 license: Apache-2.0
-repository-code: "https://github.com/ln-one/eahr-bench"
-url: "https://github.com/ln-one/eahr-bench"
+repository-code: "https://github.com/ln-one/exact-adaptive-hybrid-retrieval"
+url: "https://github.com/ln-one/exact-adaptive-hybrid-retrieval"
 preferred-citation:
   type: article
   title: "Exact Adaptive Hybrid Retrieval Without Fixed Top-L Cutoffs"
@@ -17,3 +17,5 @@ preferred-citation:
     - family-names: Zhang
       given-names: Chunran
   year: 2026
+  doi: "10.48550/arXiv.2608.07152"
+  url: "https://arxiv.org/abs/2608.07152"

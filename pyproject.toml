@@ -1,7 +1,7 @@
 [project]
-name = "stratumind-bench"
+name = "exact-adaptive-hybrid-retrieval"
 version = "0.1.0"
-description = "Reproducible dataset and experiment pipeline for ED-WRRF."
+description = "Reproducible experiments and processed result data for EAHR."
 requires-python = ">=3.11,<3.14"
 dependencies = [
   "dvc==3.63.0",
