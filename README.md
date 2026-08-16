@@ -1,6 +1,7 @@
 # Exact Adaptive Hybrid Retrieval (EAHR)
 
 [![Paper DOI](https://img.shields.io/badge/DOI-10.48550%2FarXiv.2608.07152-blue)](https://doi.org/10.48550/arXiv.2608.07152)
+[![Software DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21968866.svg)](https://doi.org/10.5281/zenodo.21968866)
 [![Verify public evidence](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/verify.yml/badge.svg)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/verify.yml)
 [![GitHub release](https://img.shields.io/github/v/release/ln-one/exact-adaptive-hybrid-retrieval)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/releases)
 [![License](https://img.shields.io/github/license/ln-one/exact-adaptive-hybrid-retrieval)](LICENSE)
@@ -175,5 +176,8 @@ third-party corpora, models, or other upstream artifacts. See
 [`paper-results/LICENSE.md`](paper-results/LICENSE.md) and
 [`CITATION.cff`](CITATION.cff).
 
-The DOI above identifies the paper. A separate DOI for a frozen software and
-processed-data release will be added after the GitHub release is archived.
+The paper DOI is `10.48550/arXiv.2608.07152`. The software and processed-data
+archive is preserved on Zenodo under the stable concept DOI
+[`10.5281/zenodo.21968866`](https://doi.org/10.5281/zenodo.21968866); release
+`v0.1.1` is archived as
+[`10.5281/zenodo.21968867`](https://doi.org/10.5281/zenodo.21968867).

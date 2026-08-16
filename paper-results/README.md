@@ -35,9 +35,11 @@ The experiment harness is in this repository. The corresponding retrieval
 implementation is maintained in
 [StratuMind](https://github.com/ln-one/StratuMind). The paper is identified by
 [DOI: 10.48550/arXiv.2608.07152](https://doi.org/10.48550/arXiv.2608.07152).
-A separate archival DOI has not yet been assigned to this software and
-processed-data package; do not describe this directory as a DOI-backed deposit
-until that record exists.
+The software and processed-data package is preserved under the stable Zenodo
+concept DOI
+[`10.5281/zenodo.21968866`](https://doi.org/10.5281/zenodo.21968866); release
+`v0.1.1` is archived as
+[`10.5281/zenodo.21968867`](https://doi.org/10.5281/zenodo.21968867).
 
 ## Data Availability
 
@@ -53,13 +55,5 @@ files are identified by relative logical path and SHA-256 digest in
 `paper-results/source-evidence.json`. Code for data preparation, validation,
 and experiment execution is provided in this repository, and the corresponding
 retrieval implementation is available from the StratuMind repository linked
-above. The archival repository identifier for this processed-data package will
-be added before final publication.
-
-## Release actions still required
-
-- archive a tagged release in a repository that issues a DOI or another
-  persistent identifier;
-- add the final paper identifier and related-identifier link to the archive;
-- test the public landing page and downloaded archive outside the author
-  account.
+above. The frozen public package is available from the Zenodo record linked
+above.
