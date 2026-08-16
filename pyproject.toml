@@ -1,6 +1,6 @@
 [project]
 name = "exact-adaptive-hybrid-retrieval"
-version = "0.1.0"
+version = "0.1.1"
 description = "Reproducible experiments and processed result data for EAHR."
 requires-python = ">=3.11,<3.14"
 dependencies = [

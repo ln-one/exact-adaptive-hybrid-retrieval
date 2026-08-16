@@ -5,8 +5,8 @@ type: software
 authors:
   - family-names: Zhang
     given-names: Chunran
-version: 0.1.0
-date-released: 2026-08-08
+version: 0.1.1
+date-released: 2026-08-17
 license: Apache-2.0
 repository-code: "https://github.com/ln-one/exact-adaptive-hybrid-retrieval"
 url: "https://github.com/ln-one/exact-adaptive-hybrid-retrieval"
