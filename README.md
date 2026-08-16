@@ -1,7 +1,7 @@
 # Exact Adaptive Hybrid Retrieval (EAHR)
 
 [![Paper DOI](https://img.shields.io/badge/DOI-10.48550%2FarXiv.2608.07152-blue)](https://doi.org/10.48550/arXiv.2608.07152)
-[![Verify public evidence](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/ci.yml/badge.svg)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/ci.yml)
+[![Verify public evidence](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/verify.yml/badge.svg)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/actions/workflows/verify.yml)
 [![GitHub release](https://img.shields.io/github/v/release/ln-one/exact-adaptive-hybrid-retrieval)](https://github.com/ln-one/exact-adaptive-hybrid-retrieval/releases)
 [![License](https://img.shields.io/github/license/ln-one/exact-adaptive-hybrid-retrieval)](LICENSE)
 
